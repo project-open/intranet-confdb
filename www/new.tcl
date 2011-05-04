@@ -281,38 +281,40 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 # Show dumb tables
 # ---------------------------------------------------------------
 
-set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]
-set result ""
-
-if {[im_table_exists "ocs_hardware"]} {
+set hardware_id ""
+if {[info exists conf_item_id]} {
+    set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]
+    
+    if {[im_table_exists "ocs_hardware"]} {
 
 	if {"" == $conf_item_type_id} { set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]}
 
-    if {[im_category_is_a $conf_item_type_id 11850]} {
+	set result ""
+	if {[im_category_is_a $conf_item_type_id 11850]} {
 
-append result [im_generic_table_component -table_name "ocs_drives" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_monitors" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_inputs" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_memories" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_modems" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_printers" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_sounds" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_storages" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_videos" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_bios" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_slots" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id pshare}]
-append result [im_generic_table_component -table_name "ocs_ports" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_controllers" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-append result [im_generic_table_component -table_name "ocs_softwares" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-
-# append result [im_generic_table_component -table_name "ocs_registry" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-# append result [im_generic_table_component -table_name "ocs_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-# append result [im_generic_table_component -table_name "ocs_locks" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-# append result [im_generic_table_component -table_name "ocs_network_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-
+	    append result [im_generic_table_component -table_name "ocs_drives" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_monitors" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_inputs" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_memories" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_modems" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_printers" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_sounds" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_storages" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_videos" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_bios" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_slots" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id pshare}]
+	    append result [im_generic_table_component -table_name "ocs_ports" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_controllers" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    append result [im_generic_table_component -table_name "ocs_softwares" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    
+	    # append result [im_generic_table_component -table_name "ocs_registry" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    # append result [im_generic_table_component -table_name "ocs_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    # append result [im_generic_table_component -table_name "ocs_locks" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    # append result [im_generic_table_component -table_name "ocs_network_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
+	    
+	}
     }
 }
-
 
 # ---------------------------------------------------------------
 # 
