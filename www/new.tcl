@@ -281,6 +281,7 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 # Show dumb tables
 # ---------------------------------------------------------------
 
+set result ""
 set hardware_id ""
 if {[info exists conf_item_id]} {
     set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]
@@ -289,7 +290,6 @@ if {[info exists conf_item_id]} {
 
 	if {"" == $conf_item_type_id} { set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :conf_item_id" -default 0]}
 
-	set result ""
 	if {[im_category_is_a $conf_item_type_id 11850]} {
 
 	    append result [im_generic_table_component -table_name "ocs_drives" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
