@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-confdb" package_version="3.4.0.7.0" locale="en_US" charset="ISO-8859-1">
+<message_catalog package_key="intranet-confdb" locale="en_US" charset="ISO-8859-1">
 
   <msg key="2nd_Level_Items">2nd Level Items</msg>
   <msg key="Active">Active</msg>
@@ -72,6 +72,7 @@
   <msg key="Project">Project</msg>
   <msg key="Project_Name">Project Name</msg>
   <msg key="Remove_checked_items">Remove Checked Items</msg>
+  <msg key="Room">Room</msg>
   <msg key="Server">Server</msg>
   <msg key="Software">Software</msg>
   <msg key="Software_Application">Software Application</msg>
