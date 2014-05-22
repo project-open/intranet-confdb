@@ -41,7 +41,7 @@ eval $perm_cmd
 
 # Options - get the value range for input fields
 set conf_item_parent_options [im_conf_item_options -include_empty_p 1]
-set cost_center_options [util_memoize "im_cost_center_options -include_empty 0" 3600]
+set cost_center_options [util_memoize [list im_cost_center_options -include_empty 0] 3600]
 
 set form_id "conf_item"
 set action_url "/intranet-confdb/new"

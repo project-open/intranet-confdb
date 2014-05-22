@@ -64,7 +64,7 @@ if {"" != $admin_links} {
 #     	{project_id:text(select),optional { label "[lang::message::lookup {} intranet-confdb.Project {Project}]" } {options $project_options }}
 
 
-set owner_options [util_memoize "im_employee_options" 3600]
+set owner_options [util_memoize [list im_employee_options] 3600]
 set cost_center_options [im_cost_center_options -include_empty 1]
 set treelevel_options [list \
 	[list [lang::message::lookup "" intranet-confdb.Top_Items "Only Top Items"] 0] \
