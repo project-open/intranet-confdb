@@ -56,7 +56,7 @@ ad_proc -public im_conf_item_type_cvs_repository {} { return 12400 }
 ad_proc -public im_package_conf_items_id {} {
     Returns the package id of the intranet-confdb module
 } {
-    return [util_memoize "im_package_conf_items_id_helper"]
+    return [util_memoize im_package_conf_items_id_helper]
 }
 
 ad_proc -private im_package_conf_items_id_helper {} {
@@ -87,7 +87,7 @@ namespace eval im_conf_item {
 	    set current_user_id [ad_get_user_id]
 	} else {
 	    set peeraddr "0.0.0.0"
-	    set current_user_id [util_memoize [list db_string first_user {select min(person_id) from persons where person_id > 0}]]
+	    set current_user_id [util_memoize [list db_string first_user "select min(person_id) from persons where person_id > 0" -default 0]]
 	}
 
 	array set vars $var_hash
