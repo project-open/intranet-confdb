@@ -625,11 +625,23 @@ ad_proc -public im_conf_item_list_component {
     # Associated Object
     if {[string is integer $object_id] && $object_id > 0} {
 	lappend criteria "ci.conf_item_id in (
-		select	 r.object_id_two
-		from	 acs_rels r,
-			 im_conf_item_project_rels cipr
-		where	 r.rel_id = cipr.rel_id and
-			 r.object_id_one = :object_id
+		-- Generic relationship between object and conf item
+		select	r.object_id_two
+		from	acs_rels r,
+			im_conf_item_project_rels cipr
+		where	r.rel_id = cipr.rel_id and
+			r.object_id_one = :object_id
+	UNION
+		-- object is the owner of the conf item
+		select	cf.conf_item_id
+		from	im_conf_items cf
+		where	cf.conf_item_owner_id = :object_id
+	UNION
+		-- object is the user who created the conf item
+		select	object_id
+		from	acs_objects
+		where	object_type = 'im_conf_item' and
+			creation_user = :object_id
 	)"
     }
 
