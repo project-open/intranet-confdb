@@ -45,6 +45,16 @@ if {"display" == $form_mode || "" == $form_mode} {
     # Write Audit Trail
     if {[info exists conf_item_id]} {
 	im_audit -object_type "im_conf_item" -object_id $conf_item_id -action before_view
+
+	set conf_item_exists_p [db_string exists "select count(*) from im_conf_items where conf_item_id = :conf_item_id"]
+	if {!$conf_item_exists_p} {
+	    ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-confdb.Conf_Item_doesnt_exist "Configuration Item #%conf_item_id% doesn't exist"]</b><br>
+	    &nbsp;<br>
+	    [lang::message::lookup "" intranet-confdb.Conf_Item_doesnt_exist_message "
+	    	The system didn't find the configuration item with the ID #%conf_item_id%.<br>
+		Please contact your system administrator.
+	    "]"
+	}
     }
 
 } else {
