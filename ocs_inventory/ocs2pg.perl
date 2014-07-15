@@ -122,15 +122,15 @@ sub get_identifier($$$) {
     my @cols = split(/,/,$col);
     $col =~ s/,//g;
     # in case all columns together too long we have to truncate them
-	if (length($col) > 55) {
-   		my $totaltocut = length($col)-55;
-   		my $tocut = ceil($totaltocut / @cols);
-   		@cols = map {substr($_,0,abs(length($_)-$tocut))} @cols;
-   		$col="";
-   		foreach (@cols){
-			$col.=$_;
-		}   	
-	}
+    if (length($col) > 55) {
+	my $totaltocut = length($col)-55;
+	my $tocut = ceil($totaltocut / @cols);
+	@cols = map {substr($_,0,abs(length($_)-$tocut))} @cols;
+	$col="";
+	foreach (@cols){
+	    $col.=$_;
+	}   	
+    }
 
     my $max_table_length = 63 - length("_${col}_$suffix");
 
@@ -138,7 +138,7 @@ sub get_identifier($$$) {
         $table = substr($table, length($table) - $max_table_length, $max_table_length);
     }
     return quote_and_lc("${table}_${col}_${suffix}");
-}
+		   }
 
 
 #
@@ -176,14 +176,14 @@ sub print_post_create_sql() {
             } else {
                 print OUT "$_;\n" 
             }
-        }
+    }
     }
 
     if ($SEP_FILE) {
         close SEP_FILE;
     }
-	$post_create_sql='';
-	# empty %constraints for next " create table" statement 
+    $post_create_sql='';
+    # empty %constraints for next " create table" statement 
 }
 
 # quotes a string or a multicolumn string (comma separated)
@@ -193,16 +193,16 @@ sub print_post_create_sql() {
 sub quote_and_lc($)
 {
     my $col = shift;
-	if ($LOWERCASE) {
-		$col = lc($col);
-	}	  
+    if ($LOWERCASE) {
+	$col = lc($col);
+    }	  
     if ($col =~ m/,/) { 
-	    my @cols = split(/,\s?/, $col);
-	    @cols = map {"\"$_\""} @cols;
-	    return join(', ', @cols);
-	} else {
-		return "\"$col\"";
-	}
+	my @cols = split(/,\s?/, $col);
+	@cols = map {"\"$_\""} @cols;
+	return join(', ', @cols);
+    } else {
+	return "\"$col\"";
+    }
 }
 
 ########################################################
@@ -223,35 +223,35 @@ $ENC_IN = $opt_enc_in || 'utf8';
 $ENC_OUT = $opt_enc_out || 'utf8';
 
 if (($HELP) || ! defined($ARGV[0]) || ! defined($ARGV[1])) {
-	print "\n\nUsage: perl $0 {--help --debug --preserve_case --char2varchar --nodrop --schema --sepfile --enc_in --enc_out } mysql.sql pg.sql\n";
-	print "\t* OPTIONS WITHOUT ARGS\n";
-	print "\t--help:  prints this message \n";
-	print "\t--debug: output the commented-out mysql line above the postgres line in pg.sql \n";
-	print "\t--preserve_case: prevents automatic case-lowering of column and table names\n";
+    print "\n\nUsage: perl $0 {--help --debug --preserve_case --char2varchar --nodrop --schema --sepfile --enc_in --enc_out } mysql.sql pg.sql\n";
+    print "\t* OPTIONS WITHOUT ARGS\n";
+    print "\t--help:  prints this message \n";
+    print "\t--debug: output the commented-out mysql line above the postgres line in pg.sql \n";
+    print "\t--preserve_case: prevents automatic case-lowering of column and table names\n";
     print "\t\tIf you want to preserve case, you must set this flag. For example,\n";
     print "\t\tIf your client application quotes table and column-names and they have cases in them, set this flag\n";
-	print "\t--char2varchar: converts all char fields to varchar\n";
+    print "\t--char2varchar: converts all char fields to varchar\n";
     print "\t--nodrop: strips out DROP TABLE statements\n";
     print "\t\totherise harmless warnings are printed by psql when the dropped table does not exist\n";
-	print "\n\t* OPTIONS WITH ARGS\n";
-	print "\t--schema: outputs a line into the postgres sql file setting search_path \n";
+    print "\n\t* OPTIONS WITH ARGS\n";
+    print "\t--schema: outputs a line into the postgres sql file setting search_path \n";
     print "\t--sepfile: output foreign key constraints and indexes to a separate file so that it can be\n";
     print "\t\timported after large data set is inserted from another dump file\n";
     print "\t--enc_in: encoding of mysql in file (default utf8) \n";
     print "\t--enc_out: encoding of postgres out file (default utf8) \n";
-	print "\n\t* REQUIRED ARGUMENTS\n";
-	if (defined ($ARGV[0])) {
-		print "\tmysql.sql ($ARGV[0])\n";
-	} else {
-		print "\tmysql.sql (undefined)\n";
-	}
-	if (defined ($ARGV[1])) {
-		print "\tpg.sql ($ARGV[1])\n";
-	} else {
-		print "\tpg.sql (undefined)\n";
-	}
+    print "\n\t* REQUIRED ARGUMENTS\n";
+    if (defined ($ARGV[0])) {
+	print "\tmysql.sql ($ARGV[0])\n";
+    } else {
+	print "\tmysql.sql (undefined)\n";
+    }
+    if (defined ($ARGV[1])) {
+	print "\tpg.sql ($ARGV[1])\n";
+    } else {
+	print "\tpg.sql (undefined)\n";
+    }
     print "\n";
-	exit 1;
+    exit 1;
 } 
 ########################################################
 # 4.  process through mysql_dump.sql file 
@@ -312,385 +312,397 @@ while(<IN>) {
 # 
 ########################################################
 
+    # fraber 140718: Eliminate /* ... */ in-line comments and remove the created empty lines
+    # s/\/\*.+?\*\///gi;
+    # s/^;$//;
 
-if (!/^\s*insert into/i) { # not inside create table so don't worry about data corruption
-    s/`//g;  #  '`pgsql uses no backticks to denote table name (CREATE TABLE `sd`) or around field 
-            # and table names like  mysql
-            # doh!  we hope all dashes and special chars are caught by the regular expressions :)
-}
-if (/^\s*USE\s*([^;]*);/) { 
-    print OUT "\\c ". $1; 
-    next;
-}
-if (/^(UN)?LOCK TABLES/i  || /drop\s+table/i ) {
 
-    # skip
-    # DROP TABLE is added when we see the CREATE TABLE
-    next;
-}
-if (/(create\s+table\s+)([-_\w]+)\s/i) { #  example: CREATE TABLE `english_english` 
-    print_post_create_sql();   # for last table
-    $tables_first_timestamp_column= 1;  #  decision to print warnings about default_timestamp not being in postgres
-    $create_sql = '';
-    $table_no_quotes = "ocs_$2";
-    $table=quote_and_lc("ocs_$2");
-    if ( !$NODROP )  {  # always print drop table if user doesn't explicitly say not to   
-        #  to drop a table that is referenced by a view or a foreign-key constraint of another table, 
-        #  CASCADE must be specified. (CASCADE will remove a dependent view entirely, but in the 
-        #  in the foreign-key case it will only remove the foreign-key constraint, not the other table entirely.)  
-        #  (source: 8.1.3 docs, section "drop table")
-        warn "table $table will be dropped CASCADE\n";
-        $pre_create_sql .= "DROP TABLE $table CASCADE\\g\n";    # custom dumps may be missing the 'dump' commands
-    }
-    
-    s/(create\s+table\s+)([-_\w]+)\s/$1 $table /i;
-    if ($DEBUG) {
-        $create_sql .=  '-- ' . $_;
-    }
-    $create_sql .= $_;
-    next;
-}
-if ($create_sql ne "") { 		# we are inside create table statement so lets process datatypes
-    # print out comments or empty lines in context
-    if ($DEBUG) {
-        $create_sql .=  '-- ' . $_;
-    }
-    if (/^#/ || /^$/ || /^\s*--/) { 
-        s/^#/--/;   #  Two hyphens (--) is the SQL-92 standard indicator for comments
-        $create_sql.=$_;
-        next;
-    }
-
-    if (/\).*;/i) {	# end of create table squence
-
-        s/INSERT METHOD[=\s+][^;\s]+//i; 
-        s/PASSWORD=[^;\s]+//i; 
-        s/ROW_FORMAT=(?:DEFAULT|DYNAMIC|FIXED|COMPRESSED|REDUNDANT|COMPACT)+//i; 
-        s/DELAY KEY WRITE=[^;\s]+//i; 
-        s/INDEX DIRECTORY[=\s+][^;\s]+//i; 
-        s/DATA DIRECTORY=[^;\s]+//i; 
-        s/CONNECTION=[^;\s]+//i; 
-        s/CHECKSUM=[^;\s]+//i; 
-        s/Type=[^;\s]+//i; # ISAM ,   # older versions
-        s/COLLATE=[^;\s]+//i;         # table's collate
-        s/COLLATE\s+[^;\s]+//i;         # table's collate
-        s/AUTO_INCREMENT=\d+//i;	  # possible AUTO_INCREMENT starting index, it is used in mysql 5.0.26, not sure since which version
-        s/PACK_KEYS=\d//i;            # mysql 5.0.22
-        s/DEFAULT CHARSET=[^;\s]+//i; #  my mysql version is 4.1.11 
-        s/ENGINE\s*=\s*[^;\s]+//i;   #  my mysql version is 4.1.11 
-        s/ROW_FORMAT=[^;\s]+//i;   #  my mysql version is 5.0.22
-        s/MIN_ROWS=[^;\s]+//i;
-        s/MAX_ROWS=[^;\s]+//i;
-        s/AVG_ROW_LENGTH=[^;\s]+//i;
-        if (/COMMENT='([^']*)'/) {  # ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='must be country zones';
-            $post_create_sql.="COMMENT ON TABLE $table IS '$1'\;"; # COMMENT ON table_name IS 'text'; 
-            s/COMMENT='[^']*'//i;
-        }
-        $create_sql =~ s/,$//g;	# strip last , inside create table
-        # make sure we end in a comma, as KEY statments are turned
-        # into post_create_sql indices 
-        # they often are the last line so leaving a 'hanging comma'
-        my @array = split("\n", $create_sql);
-        for (my $a = $#array; $a >= 0; $a--) {  #loop backwards
-            if ($a == $#array  && $array[$a] =~ m/,\s*$/) {    # for last line
-                $array[$a] =~ s/,\s*$//; 
-                next;  
-            }  
-            if ($array[$a] !~ m/create table/i) {  # i.e. if there was more than one column in table
-                if ($a != $#array  && $array[$a] !~ m/,\s*$/  ) {  # for second to last
-                    $array[$a] =~ s/$/,/; 
-                    last; 
-                }
-                elsif ($a != $#array  && $array[$a] =~ m/,\s*$/ ) {  # for second to last
-                    last; 
-                }
-            }
-        }
-        $create_sql = join("\n", @array) . "\n";
-        $create_sql .=  $_;
-
-        # put comments out first 
-        print OUT $pre_create_sql;
-
-        # create separate table to reference and to hold mysql's possible set data-type
-        # values.  do that table's creation before create table
-        # definition 
-        foreach $column_name (keys %constraints) {
-            $type=$constraints{$column_name}{'type'};
-            $column_valuesStr = $constraints{$column_name}{'values'};
-            $constraint_table_name = get_identifier(${table},${column_name} ,"constraint_table");
-            if ($type eq 'set') {
-                print OUT qq~DROP TABLE $constraint_table_name  CASCADE\\g\n~ ;
-                print OUT qq~create table $constraint_table_name  ( set_values varchar UNIQUE)\\g\n~ ;
-                $function_create_sql .= make_plpgsql($table,$column_name); 
-            } elsif ($type eq 'year')  {
-                print OUT qq~DROP TABLE $constraint_table_name  CASCADE\\g\n~ ;
-                print OUT qq~create table $constraint_table_name  ( year_values varchar UNIQUE)\\g\n~ ;
-            }
-            @column_values = split /,/, $column_valuesStr;
-            foreach $value (@column_values) {  
-                print OUT qq~insert into $constraint_table_name   values (  $value  )\\g\n~; # ad ' for ints and varchars	
-            }
-        }
-
-        # print create table and reset create table vars
-        # when moving from each "create table" to "insert" part of dump
-        print OUT $create_sql;
-        print OUT $function_create_sql;
-        $pre_create_sql="";
-        $create_sql="";
-        $function_create_sql='';
-        %constraints=();
-        # the post_create_sql for this table is output at the beginning of the next table def
-        # in case we want to make indexes after doing inserting
-        next;
-    } 
-    if (/^\s*(\w+)\s+.*COMMENT\s*'([^']*)'/) {  #`zone_country_id` int(11) COMMENT 'column comment here',
-        $quoted_column=quote_and_lc($1);  
-        $post_create_sql.="COMMENT ON COLUMN $table"."."." $quoted_column IS '$2'\;"; # COMMENT ON table_name.column_name IS 'text'; 
-        s/COMMENT\s*'[^']*'//i;
+    # fraber 140718: Eliminate "create database" statements
+    if (/create\s+database/i) { #  example: CREATE DATABASE 'ocs'
+	next;
     }
 
 
-    # NUMERIC DATATYPES
-    #
-    # auto_increment -> sequences
-    # UNSIGNED conversions
-    # TINYINT     
-    # SMALLINT    
-    # MEDIUMINT   
-    # INT, INTEGER 
-    # BIGINT  
-    #
-    # DOUBLE [PRECISION], REAL    
-    # DECIMAL(M,D), NUMERIC(M,D)  
-    # FLOAT(p)
-    # FLOAT  
-    
-    s/(\w*int)\(\d+\)/$1/g;  # hack of the (n) stuff for e.g. mediumint(2) int(3)
-
-    if (/^(\s*)(\w+)\s*.*numeric.*auto_increment/i) { 		# int,auto_increment -> serial
-        $seq = get_identifier($table, $2, 'seq');
-        $quoted_column=quote_and_lc($2);  
-        $pre_create_sql.= "DROP SEQUENCE $seq CASCADE\;\n\n";  # cascade will force drop of table, too
-        $pre_create_sql.= "CREATE SEQUENCE $seq \;\n\n";
-        #  Note:  Before PostgreSQL 8.1, the arguments of the sequence functions were of type text, not regclass, 
-        # and the above-described conversion from a text string to an OID value would happen at run time during 
-        # each call. For backwards compatibility, this facility still exists, but internally it is now handled 
-        #  as an implicit coercion from text to regclass before the function is invoked.  (source: 8.1.3 manual, section 9.12)
-        s/^(\s*)(\w+)\s*.*NUMERIC(.*)auto_increment([^,]*)/$1 $quoted_column numeric $3 DEFAULT nextval('$seq') $4/ig;
-        #  MYSQL: data_id mediumint(8) unsigned NOT NULL auto_increment,
-        $create_sql.=$_;
-        next;
+    if (!/^\s*insert into/i) { # not inside create table so don't worry about data corruption
+	s/`//g;  #  '`pgsql uses no backticks to denote table name (CREATE TABLE `sd`) or around field 
+	# and table names like  mysql
+	# doh!  we hope all dashes and special chars are caught by the regular expressions :)
     }
-    if (/^\s*(\w+)\s+.*int.*auto_increment/i) {  #  example: data_id mediumint(8) unsigned NOT NULL auto_increment,
-        # int,auto_increment -> serial (same as what is done below)
-        # for postgres side see http://www.postgresql.org/docs/7.4/interactive/datatype.html#DATATYPE-SERIAL
-        $seq = get_identifier($table, $1, 'seq');
-        $quoted_column=quote_and_lc($1);  
-        $pre_create_sql.= "DROP SEQUENCE $seq CASCADE \;\n\n";  # cascade will force drop of table, too
-        $pre_create_sql.= "CREATE SEQUENCE $seq \;\n\n";
-        s/(\s*)(\w+)\s+.*int.*auto_increment[^,]*/$1 $quoted_column integer DEFAULT nextval('$seq') NOT NULL/ig;
-        $create_sql.=$_;
-        next;
-    } 
+    if (/^\s*USE\s*([^;]*);/) { 
 
-
-
-
-    # convert UNSIGNED to CHECK constraints
-    if (m/^(\s*)(\w+)\s+((float|double|double precision|real|decimal|numeric))(.*)unsigned/i) {   
-        $quoted_column = quote_and_lc($2);
-        s/^(\s*)(\w+)\s+((float|double|double precision|real|decimal|numeric))(.*)unsigned/$1 $quoted_column $3 $4 CHECK ($quoted_column >= 0)/i;
+	# fraber 140718: Don't need to change database
+	# print OUT "\\c ". $1. "\n"; 
+	next;
     }
-    # example:  `wordsize` tinyint(3) unsigned default NULL,
-    if (m/^(\s+)(\w+)\s+(\w+)\s+unsigned/i) {  
-        $quoted_column=quote_and_lc($2);  
-        s/^(\s+)(\w+)\s+(\w+)\s+unsigned/$1 $quoted_column $3 CHECK ($quoted_column >= 0)/i;
+    if (/^(UN)?LOCK TABLES/i  || /drop\s+table/i ) {
+
+	# skip
+	# DROP TABLE is added when we see the CREATE TABLE
+	next;
     }
-    if (m/^(\s*)(\w+)\s+(bigint.*)unsigned/) {  
-        $quoted_column=quote_and_lc($2);  
-        #  see http://archives.postgresql.org/pgsql-general/2005-07/msg01178.php
-        #  and see http://www.postgresql.org/docs/8.2/interactive/datatype-numeric.html
-        # see  http://dev.mysql.com/doc/refman/5.1/en/numeric-types.html  max size == 20 digits
-        s/^(\s*)(\w+)\s+bigint(.*)unsigned/$1 $quoted_column NUMERIC (20,0) CHECK ($quoted_column >= 0)/i;
-
+    if (/(create\s+table\s+)([-_\w]+)\s/i) { #  example: CREATE TABLE `english_english` 
+	print_post_create_sql();   # for last table
+	$tables_first_timestamp_column= 1;  #  decision to print warnings about default_timestamp not being in postgres
+	$create_sql = '';
+	$table_no_quotes = "ocs_$2";
+	$table=quote_and_lc("ocs_$2");
+	if ( !$NODROP )  {  # always print drop table if user doesn't explicitly say not to   
+	    #  to drop a table that is referenced by a view or a foreign-key constraint of another table, 
+	    #  CASCADE must be specified. (CASCADE will remove a dependent view entirely, but in the 
+	    #  in the foreign-key case it will only remove the foreign-key constraint, not the other table entirely.)  
+	    #  (source: 8.1.3 docs, section "drop table")
+	    warn "table $table will be dropped CASCADE\n";
+	    $pre_create_sql .= "DROP TABLE $table CASCADE\\g\n";    # custom dumps may be missing the 'dump' commands
+	}
+	
+	s/(create\s+table\s+)([-_\w]+)\s/$1 $table /i;
+	if ($DEBUG) {
+	    $create_sql .=  '-- ' . $_;
+	}
+	$create_sql .= $_;
+	next;
     }
+    if ($create_sql ne "") { 		# we are inside create table statement so lets process datatypes
+	# print out comments or empty lines in context
+	if ($DEBUG) {
+	    $create_sql .=  '-- ' . $_;
+	}
+	if (/^#/ || /^$/ || /^\s*--/) { 
+	    s/^#/--/;   #  Two hyphens (--) is the SQL-92 standard indicator for comments
+	    $create_sql.=$_;
+	    next;
+	}
 
-    # int type conversion
-    # TINYINT    (signed) -128 to 127 (unsigned) 0   255
-    #  SMALLINT A small integer. The signed range is -32768 to 32767. The unsigned range is 0 to 65535.
-    #  MEDIUMINT  A medium-sized integer. The signed range is -8388608 to 8388607. The unsigned range is 0 to 16777215.
-    #  INT A normal-size integer. The signed range is -2147483648 to 2147483647. The unsigned range is 0 to 4294967295.
-    # BIGINT The signed range is -9223372036854775808 to 9223372036854775807. The unsigned range is 0 to 18446744073709551615
-    # for postgres see http://www.postgresql.org/docs/8.2/static/datatype-numeric.html#DATATYPE-INT
-    s/^(\s+"*\w+"*\s+)tinyint/$1 smallint/i; 
-    s/^(\s+"*\w+"*\s+)mediumint/$1 integer/i; 
-    
-    # the floating point types
-    #   double - no need for conversion
-    #   double(n,m) -> double precision
-    #   float - no need for conversion
-    #   float(n) - no need for conversion
-    #   float(n,m) -> double precision
+	if (/\).*;/i) {	# end of create table squence
 
-    s/float(\(\d*,\d*\))/double precision/i;  
-    s/double(\(\d*,\d*\))/double precision/i;
+	    s/INSERT METHOD[=\s+][^;\s]+//i; 
+	    s/PASSWORD=[^;\s]+//i; 
+	    s/ROW_FORMAT=(?:DEFAULT|DYNAMIC|FIXED|COMPRESSED|REDUNDANT|COMPACT)+//i; 
+	    s/DELAY KEY WRITE=[^;\s]+//i; 
+	    s/INDEX DIRECTORY[=\s+][^;\s]+//i; 
+	    s/DATA DIRECTORY=[^;\s]+//i; 
+	    s/CONNECTION=[^;\s]+//i; 
+	    s/CHECKSUM=[^;\s]+//i; 
+	    s/Type=[^;\s]+//i; # ISAM ,   # older versions
+	    s/COLLATE=[^;\s]+//i;         # table's collate
+	    s/COLLATE\s+[^;\s]+//i;         # table's collate
+	    s/AUTO_INCREMENT=\d+//i;	  # possible AUTO_INCREMENT starting index, it is used in mysql 5.0.26, not sure since which version
+	    s/PACK_KEYS=\d//i;            # mysql 5.0.22
+	    s/DEFAULT CHARSET=[^;\s]+//i; #  my mysql version is 4.1.11 
+	    s/ENGINE\s*=\s*[^;\s]+//i;   #  my mysql version is 4.1.11 
+	    s/ROW_FORMAT=[^;\s]+//i;   #  my mysql version is 5.0.22
+	    s/MIN_ROWS=[^;\s]+//i;
+	    s/MAX_ROWS=[^;\s]+//i;
+	    s/AVG_ROW_LENGTH=[^;\s]+//i;
+	    if (/COMMENT='([^']*)'/) {  # ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='must be country zones';
+		$post_create_sql.="COMMENT ON TABLE $table IS '$1'\;"; # COMMENT ON table_name IS 'text'; 
+		s/COMMENT='[^']*'//i;
+	    }
+	    $create_sql =~ s/,$//g;	# strip last , inside create table
+	    # make sure we end in a comma, as KEY statments are turned
+	    # into post_create_sql indices 
+	    # they often are the last line so leaving a 'hanging comma'
+	    my @array = split("\n", $create_sql);
+	    for (my $a = $#array; $a >= 0; $a--) {  #loop backwards
+		if ($a == $#array  && $array[$a] =~ m/,\s*$/) {    # for last line
+		    $array[$a] =~ s/,\s*$//; 
+		    next;  
+		}  
+		if ($array[$a] !~ m/create table/i) {  # i.e. if there was more than one column in table
+		    if ($a != $#array  && $array[$a] !~ m/,\s*$/  ) {  # for second to last
+			$array[$a] =~ s/$/,/; 
+			last; 
+		    }
+		    elsif ($a != $#array  && $array[$a] =~ m/,\s*$/ ) {  # for second to last
+			last; 
+		    }
+		}
+	    }
+	    $create_sql = join("\n", @array) . "\n";
+	    $create_sql .=  $_;
 
-    # 
-    # CHARACTER TYPES
-    # 
-    # set
-    # enum
-    # binary(M), VARBINARy(M), tinyblob, tinytext, 
-    # bit
-    # char(M), varchar(M)
-    # blob -> text 
-    # mediumblob
-    # longblob, longtext
-    # text -> text
-    # mediumtext
-    # longtext
-    #  mysql docs: A BLOB is a binary large object that can hold a variable amount of data. 
+	    # put comments out first 
+	    print OUT $pre_create_sql;
 
-    # set
-    # For example, a column specified as SET('one', 'two') NOT NULL can have any of these values:
-    # ''
-    # 'one'
-    # 'two'
-    # 'one,two'
-    if (/(\w*)\s+set\(((?:['"]\w+['"]\s*,*)+(?:['"]\w+['"])*)\)(.*)$/i) { # example:  `au_auth` set('r','w','d') NOT NULL default '',
-        $column_name = $1;
-        $constraints{$column_name}{'values'} = $2;  # 'abc','def', ... 
-        $constraints{$column_name}{'type'} = "set";  # 'abc','def', ... 
-        $_ =  qq~ $column_name varchar , ~;
-        $column_name = quote_and_lc($1);
-        $create_sql.=$_;
-        next;
+	    # create separate table to reference and to hold mysql's possible set data-type
+	    # values.  do that table's creation before create table
+	    # definition 
+	    foreach $column_name (keys %constraints) {
+		$type=$constraints{$column_name}{'type'};
+		$column_valuesStr = $constraints{$column_name}{'values'};
+		$constraint_table_name = get_identifier(${table},${column_name} ,"constraint_table");
+		if ($type eq 'set') {
+		    print OUT qq~DROP TABLE $constraint_table_name  CASCADE\\g\n~ ;
+		    print OUT qq~create table $constraint_table_name  ( set_values varchar UNIQUE)\\g\n~ ;
+		    $function_create_sql .= make_plpgsql($table,$column_name); 
+		} elsif ($type eq 'year')  {
+		    print OUT qq~DROP TABLE $constraint_table_name  CASCADE\\g\n~ ;
+		    print OUT qq~create table $constraint_table_name  ( year_values varchar UNIQUE)\\g\n~ ;
+		}
+		@column_values = split /,/, $column_valuesStr;
+		foreach $value (@column_values) {  
+		    print OUT qq~insert into $constraint_table_name   values (  $value  )\\g\n~; # ad ' for ints and varchars	
+		}
+	    }
 
-    } 
-    if (/(\S*)\s+enum\(((?:['"][^'"]+['"]\s*,)+['"][^'"]+['"])\)(.*)$/i) { # enum handling 
-        #  example:  `test` enum('?','+','-') NOT NULL default '?'
-        # $2  is the values of the enum 'abc','def', ... 
-        $quoted_column=quote_and_lc($1);  
-        #  "test" NOT NULL default '?' CONSTRAINT test_test_constraint CHECK ("test" IN ('?','+','-'))
-        $_ = qq~ $quoted_column varchar CHECK ($quoted_column IN ( $2 ))$3\n~;  # just assume varchar?
-        $create_sql.=$_;
-        next;
-    } 
-    # Take care of "binary" option for char and varchar
-    # (pre-4.1.2, it indicated a byte array; from 4.1.2, indicates
-    # a binary collation)
-    s/(?:var)?char(?:\(\d+\))? (?:byte|binary)/bytea/i; 
-    if (m/(?:var)?binary\s*\(\d+\)/i) {   #  c varBINARY(3) in Mysql
-        warn "WARNING in table '$table' '$_':  binary type is converted to bytea (unsized) for Postgres\n";
-    }
-    s/(?:var)?binary(?:\(\d+\))?/bytea/i;   #  c varBINARY(3) in Mysql
-    s/bit(?:\(\d+\))?/bytea/i;   #  bit datatype -> bytea
+	    # print create table and reset create table vars
+	    # when moving from each "create table" to "insert" part of dump
+	    print OUT $create_sql;
+	    print OUT $function_create_sql;
+	    $pre_create_sql="";
+	    $create_sql="";
+	    $function_create_sql='';
+	    %constraints=();
+	    # the post_create_sql for this table is output at the beginning of the next table def
+	    # in case we want to make indexes after doing inserting
+	    next;
+	} 
+	if (/^\s*(\w+)\s+.*COMMENT\s*'([^']*)'/) {  #`zone_country_id` int(11) COMMENT 'column comment here',
+	    $quoted_column=quote_and_lc($1);  
+	    $post_create_sql.="COMMENT ON COLUMN $table"."."." $quoted_column IS '$2'\;"; # COMMENT ON table_name.column_name IS 'text'; 
+	    s/COMMENT\s*'[^']*'//i;
+	}
 
-    # large datatypes
-    s/\w*blob/bytea/gi;
-    s/tinytext/text/gi;
-    s/mediumtext/text/gi;
-    s/longtext/text/gi;
 
-    # char -> varchar -- if specified as a command line option
-    # PostgreSQL would otherwise pad with spaces as opposed
-    # to MySQL! Your user interface may depend on this!
-    if ($CHAR2VARCHAR) {
-        s/(^\s+\S+\s+)char/${1}varchar/gi;
-    }
+	# NUMERIC DATATYPES
+	#
+	# auto_increment -> sequences
+	# UNSIGNED conversions
+	# TINYINT     
+	# SMALLINT    
+	# MEDIUMINT   
+	# INT, INTEGER 
+	# BIGINT  
+	#
+	# DOUBLE [PRECISION], REAL    
+	# DECIMAL(M,D), NUMERIC(M,D)  
+	# FLOAT(p)
+	# FLOAT  
+	
+	s/(\w*int)\(\d+\)/$1/g;  # hack of the (n) stuff for e.g. mediumint(2) int(3)
 
-    # nuke column's collate and character set
-    s/(\S+)\s+character\s+set\s+\w+/$1/gi;
-    s/(\S+)\s+collate\s+\w+/$1/gi;
+	if (/^(\s*)(\w+)\s*.*numeric.*auto_increment/i) { 		# int,auto_increment -> serial
+	    $seq = get_identifier($table, $2, 'seq');
+	    $quoted_column=quote_and_lc($2);  
+	    $pre_create_sql.= "DROP SEQUENCE $seq CASCADE\;\n\n";  # cascade will force drop of table, too
+	    $pre_create_sql.= "CREATE SEQUENCE $seq \;\n\n";
+	    #  Note:  Before PostgreSQL 8.1, the arguments of the sequence functions were of type text, not regclass, 
+	    # and the above-described conversion from a text string to an OID value would happen at run time during 
+	    # each call. For backwards compatibility, this facility still exists, but internally it is now handled 
+	    #  as an implicit coercion from text to regclass before the function is invoked.  (source: 8.1.3 manual, section 9.12)
+	    s/^(\s*)(\w+)\s*.*NUMERIC(.*)auto_increment([^,]*)/$1 $quoted_column numeric $3 DEFAULT nextval('$seq') $4/ig;
+	    #  MYSQL: data_id mediumint(8) unsigned NOT NULL auto_increment,
+	    $create_sql.=$_;
+	    next;
+	}
+	if (/^\s*(\w+)\s+.*int.*auto_increment/i) {  #  example: data_id mediumint(8) unsigned NOT NULL auto_increment,
+	    # int,auto_increment -> serial (same as what is done below)
+	    # for postgres side see http://www.postgresql.org/docs/7.4/interactive/datatype.html#DATATYPE-SERIAL
+	    $seq = get_identifier($table, $1, 'seq');
+	    $quoted_column=quote_and_lc($1);  
+	    $pre_create_sql.= "DROP SEQUENCE $seq CASCADE \;\n\n";  # cascade will force drop of table, too
+	    $pre_create_sql.= "CREATE SEQUENCE $seq \;\n\n";
+	    s/(\s*)(\w+)\s+.*int.*auto_increment[^,]*/$1 $quoted_column integer DEFAULT nextval('$seq') NOT NULL/ig;
+	    $create_sql.=$_;
+	    next;
+	} 
 
-    #
-    # DATE AND TIME TYPES
-    #
-    # date  time
-    # year
-    # datetime
-    # timestamp
-    
-    # date  time
-    # these are the same types in postgres, just do the replacement of 0000-00-00 date 
 
-    if (m/default '(\d+)-(\d+)-(\d+)([^']*)'/i) { # we grab the year, month and day
-        # NOTE: times of 00:00:00 are possible and are okay
-        my $time = '';
-        my $year=$1;
-        my $month= $2;
-        my $day = $3; 
-        if ($4) {
-            $time = $4;
-        }
-        if ($year eq "0000") { $year = '1970'; }
-        if ($month eq "00") { $month = '01'; }
-        if ($day eq "00") { $day = '01'; }
-        s/default '[^']+'/default '$year-$month-$day$time'/i; # finally we replace with $datetime
-    }        	        	
 
-    # convert mysql's year datatype to a constraint
-    if (/(\w*)\s+year\(4\)(.*)$/i) { # can be integer OR string 1901-2155
-		$constraint_table_name = get_identifier($table,$1 ,"constraint_table");
-        $column_name=quote_and_lc($1);  
-        @year_holder = ();
-        $year='';
-        for (1901 .. 2155) {
+
+	# convert UNSIGNED to CHECK constraints
+	if (m/^(\s*)(\w+)\s+((float|double|double precision|real|decimal|numeric))(.*)unsigned/i) {   
+	    $quoted_column = quote_and_lc($2);
+	    s/^(\s*)(\w+)\s+((float|double|double precision|real|decimal|numeric))(.*)unsigned/$1 $quoted_column $3 $4 CHECK ($quoted_column >= 0)/i;
+	}
+	# example:  `wordsize` tinyint(3) unsigned default NULL,
+	if (m/^(\s+)(\w+)\s+(\w+)\s+unsigned/i) {  
+	    $quoted_column=quote_and_lc($2);  
+	    s/^(\s+)(\w+)\s+(\w+)\s+unsigned/$1 $quoted_column $3 CHECK ($quoted_column >= 0)/i;
+	}
+	if (m/^(\s*)(\w+)\s+(bigint.*)unsigned/) {  
+	    $quoted_column=quote_and_lc($2);  
+	    #  see http://archives.postgresql.org/pgsql-general/2005-07/msg01178.php
+	    #  and see http://www.postgresql.org/docs/8.2/interactive/datatype-numeric.html
+	    # see  http://dev.mysql.com/doc/refman/5.1/en/numeric-types.html  max size == 20 digits
+	    s/^(\s*)(\w+)\s+bigint(.*)unsigned/$1 $quoted_column NUMERIC (20,0) CHECK ($quoted_column >= 0)/i;
+
+	}
+
+	# int type conversion
+	# TINYINT    (signed) -128 to 127 (unsigned) 0   255
+	#  SMALLINT A small integer. The signed range is -32768 to 32767. The unsigned range is 0 to 65535.
+	#  MEDIUMINT  A medium-sized integer. The signed range is -8388608 to 8388607. The unsigned range is 0 to 16777215.
+	#  INT A normal-size integer. The signed range is -2147483648 to 2147483647. The unsigned range is 0 to 4294967295.
+	# BIGINT The signed range is -9223372036854775808 to 9223372036854775807. The unsigned range is 0 to 18446744073709551615
+	# for postgres see http://www.postgresql.org/docs/8.2/static/datatype-numeric.html#DATATYPE-INT
+	s/^(\s+"*\w+"*\s+)tinyint/$1 smallint/i; 
+	s/^(\s+"*\w+"*\s+)mediumint/$1 integer/i; 
+	
+	# the floating point types
+	#   double - no need for conversion
+	#   double(n,m) -> double precision
+	#   float - no need for conversion
+	#   float(n) - no need for conversion
+	#   float(n,m) -> double precision
+
+	s/float(\(\d*,\d*\))/double precision/i;  
+	s/double(\(\d*,\d*\))/double precision/i;
+
+	# 
+	# CHARACTER TYPES
+	# 
+	# set
+	# enum
+	# binary(M), VARBINARy(M), tinyblob, tinytext, 
+	# bit
+	# char(M), varchar(M)
+	# blob -> text 
+	# mediumblob
+	# longblob, longtext
+	# text -> text
+	# mediumtext
+	# longtext
+	#  mysql docs: A BLOB is a binary large object that can hold a variable amount of data. 
+
+	# set
+	# For example, a column specified as SET('one', 'two') NOT NULL can have any of these values:
+	# ''
+	# 'one'
+	# 'two'
+	# 'one,two'
+	if (/(\w*)\s+set\(((?:['"]\w+['"]\s*,*)+(?:['"]\w+['"])*)\)(.*)$/i) { # example:  `au_auth` set('r','w','d') NOT NULL default '',
+	    $column_name = $1;
+	    $constraints{$column_name}{'values'} = $2;  # 'abc','def', ... 
+	    $constraints{$column_name}{'type'} = "set";  # 'abc','def', ... 
+	    $_ =  qq~ $column_name varchar , ~;
+	    $column_name = quote_and_lc($1);
+	    $create_sql.=$_;
+	    next;
+
+	} 
+	if (/(\S*)\s+enum\(((?:['"][^'"]+['"]\s*,)+['"][^'"]+['"])\)(.*)$/i) { # enum handling 
+	    #  example:  `test` enum('?','+','-') NOT NULL default '?'
+	    # $2  is the values of the enum 'abc','def', ... 
+	    $quoted_column=quote_and_lc($1);  
+	    #  "test" NOT NULL default '?' CONSTRAINT test_test_constraint CHECK ("test" IN ('?','+','-'))
+	    $_ = qq~ $quoted_column varchar CHECK ($quoted_column IN ( $2 ))$3\n~;  # just assume varchar?
+	    $create_sql.=$_;
+	    next;
+	} 
+	# Take care of "binary" option for char and varchar
+	# (pre-4.1.2, it indicated a byte array; from 4.1.2, indicates
+	# a binary collation)
+	s/(?:var)?char(?:\(\d+\))? (?:byte|binary)/bytea/i; 
+	if (m/(?:var)?binary\s*\(\d+\)/i) {   #  c varBINARY(3) in Mysql
+	    warn "WARNING in table '$table' '$_':  binary type is converted to bytea (unsized) for Postgres\n";
+	}
+	s/(?:var)?binary(?:\(\d+\))?/bytea/i;   #  c varBINARY(3) in Mysql
+	s/bit(?:\(\d+\))?/bytea/i;   #  bit datatype -> bytea
+
+	# large datatypes
+	s/\w*blob/bytea/gi;
+	s/tinytext/text/gi;
+	s/mediumtext/text/gi;
+	s/longtext/text/gi;
+
+	# char -> varchar -- if specified as a command line option
+	# PostgreSQL would otherwise pad with spaces as opposed
+	# to MySQL! Your user interface may depend on this!
+	if ($CHAR2VARCHAR) {
+	    s/(^\s+\S+\s+)char/${1}varchar/gi;
+	}
+
+	# nuke column's collate and character set
+	s/(\S+)\s+character\s+set\s+\w+/$1/gi;
+	s/(\S+)\s+collate\s+\w+/$1/gi;
+
+	#
+	# DATE AND TIME TYPES
+	#
+	# date  time
+	# year
+	# datetime
+	# timestamp
+	
+	# date  time
+	# these are the same types in postgres, just do the replacement of 0000-00-00 date 
+
+	if (m/default '(\d+)-(\d+)-(\d+)([^']*)'/i) { # we grab the year, month and day
+	    # NOTE: times of 00:00:00 are possible and are okay
+	    my $time = '';
+	    my $year=$1;
+	    my $month= $2;
+	    my $day = $3; 
+	    if ($4) {
+		$time = $4;
+	    }
+	    if ($year eq "0000") { $year = '1970'; }
+	    if ($month eq "00") { $month = '01'; }
+	    if ($day eq "00") { $day = '01'; }
+	    s/default '[^']+'/default '$year-$month-$day$time'/i; # finally we replace with $datetime
+	}        	        	
+
+	# convert mysql's year datatype to a constraint
+	if (/(\w*)\s+year\(4\)(.*)$/i) { # can be integer OR string 1901-2155
+	    $constraint_table_name = get_identifier($table,$1 ,"constraint_table");
+	    $column_name=quote_and_lc($1);  
+	    @year_holder = ();
+	    $year='';
+	    for (1901 .. 2155) {
                 $year = "'$_'";	
-            unless ($year =~ /2155/) { $year .= ','; }
-             push( @year_holder, $year);
-        }
-        $constraints{$column_name}{'values'} = join('','',@year_holder);   # '1901','1902', ... 
-        $constraints{$column_name}{'type'} = "year";  
-        $_ =  qq~ $column_name varchar CONSTRAINT ${table}_${column_name}_constraint REFERENCES $constraint_table_name ("year_values") $2\n~;
-        $create_sql.=$_;
-        next;
-    } elsif (/(\w*)\s+year\(2\)(.*)$/i) { # same for a 2-integer string 
-		$constraint_table_name = get_identifier($table,$1 ,"constraint_table");
-        $column_name=quote_and_lc($1);  
-        @year_holder = ();
-        $year='';
-        for (1970 .. 2069) {
-            $year = "'$_'";	
-            if ($year =~ /2069/) { next; }
-            push( @year_holder, $year);
-        }
-        push( @year_holder, '0000');
-        $constraints{$column_name}{'values'} = join(',',@year_holder);   # '1971','1972', ... 
-        $constraints{$column_name}{'type'} = "year";  # 'abc','def', ... 
-        $_ =  qq~ $1 varchar CONSTRAINT ${table}_${column_name}_constraint REFERENCES $constraint_table_name ("year_values") $2\n~;
-        $create_sql.=$_;
-        next;
-    } 
+		unless ($year =~ /2155/) { $year .= ','; }
+		push( @year_holder, $year);
+	    }
+	    $constraints{$column_name}{'values'} = join('','',@year_holder);   # '1901','1902', ... 
+	    $constraints{$column_name}{'type'} = "year";  
+	    $_ =  qq~ $column_name varchar CONSTRAINT ${table}_${column_name}_constraint REFERENCES $constraint_table_name ("year_values") $2\n~;
+	    $create_sql.=$_;
+	    next;
+	} elsif (/(\w*)\s+year\(2\)(.*)$/i) { # same for a 2-integer string 
+	    $constraint_table_name = get_identifier($table,$1 ,"constraint_table");
+	    $column_name=quote_and_lc($1);  
+	    @year_holder = ();
+	    $year='';
+	    for (1970 .. 2069) {
+		$year = "'$_'";	
+		if ($year =~ /2069/) { next; }
+		push( @year_holder, $year);
+	    }
+	    push( @year_holder, '0000');
+	    $constraints{$column_name}{'values'} = join(',',@year_holder);   # '1971','1972', ... 
+	    $constraints{$column_name}{'type'} = "year";  # 'abc','def', ... 
+	    $_ =  qq~ $1 varchar CONSTRAINT ${table}_${column_name}_constraint REFERENCES $constraint_table_name ("year_values") $2\n~;
+	    $create_sql.=$_;
+	    next;
+	} 
 
-    # datetime
-    # Default on a dump from MySQL 5.0.22 is in the same form as datetime so let it flow down
-    # to the timestamp section and deal with it there
-    s/(${sl})datetime /$1timestamp without time zone /i;
+	# datetime
+	# Default on a dump from MySQL 5.0.22 is in the same form as datetime so let it flow down
+	# to the timestamp section and deal with it there
+	s/(${sl})datetime /$1timestamp without time zone /i;
 
-    # change not null datetime field to null valid ones
-    # (to support remapping of "zero time" to null
-    # s/($sl)datetime not null/$1timestamp without time zone/i;
-
-
-    # timestamps
-    #
-    # nuke datetime representation (not supported in PostgreSQL)
-    # change default time of 0000-00-00 to 1970-01-01 
-    
-    # we may possibly need to create a trigger to provide
-    # equal functionality with ON UPDATE CURRENT TIMESTAMP
+	# change not null datetime field to null valid ones
+	# (to support remapping of "zero time" to null
+	# s/($sl)datetime not null/$1timestamp without time zone/i;
 
 
-    if (m/${sl}timestamp/i) {  
-        if ( m/ON UPDATE CURRENT_TIMESTAMP/i )  {  # the ... default CURRENT_TIMESTAMP  only applies for blank inserts, not updates
-            s/ON UPDATE CURRENT_TIMESTAMP//i ;  
-            m/^\s*(\w+)\s+timestamp/i ;
-            # automatic trigger creation 
-            $table_no_quotes =~ s/"//g;
-$function_create_sql .= " CREATE OR REPLACE FUNCTION update_". $table_no_quotes . "() RETURNS trigger AS '
+	# timestamps
+	#
+	# nuke datetime representation (not supported in PostgreSQL)
+	# change default time of 0000-00-00 to 1970-01-01 
+	
+	# we may possibly need to create a trigger to provide
+	# equal functionality with ON UPDATE CURRENT TIMESTAMP
+
+
+	if (m/${sl}timestamp/i) {  
+	    if ( m/ON UPDATE CURRENT_TIMESTAMP/i )  {  # the ... default CURRENT_TIMESTAMP  only applies for blank inserts, not updates
+		s/ON UPDATE CURRENT_TIMESTAMP//i ;  
+		m/^\s*(\w+)\s+timestamp/i ;
+		# automatic trigger creation 
+		$table_no_quotes =~ s/"//g;
+		$function_create_sql .= " CREATE OR REPLACE FUNCTION update_". $table_no_quotes . "() RETURNS trigger AS '
 BEGIN
     NEW.$1 := CURRENT_TIMESTAMP; 
     RETURN NEW;
@@ -701,20 +713,20 @@ END;
 CREATE TRIGGER add_current_date_to_".$table_no_quotes." BEFORE UPDATE ON ". $table . " FOR EACH ROW EXECUTE PROCEDURE
 update_".$table_no_quotes."();\n";
 
-        }
-        if ($tables_first_timestamp_column && m/DEFAULT NULL/i) {  
-            # DEFAULT NULL is the same as DEFAULT CURRENT_TIMESTAMP for the first TIMESTAMP  column. (MYSQL manual)
-            s/($sl)(timestamp\s+)default null/$1 $2 DEFAULT CURRENT_TIMESTAMP/i;
-        }
-        $tables_first_timestamp_column= 0;
-        if (m/${sl}timestamp\s*\(\d+\)/i) {   # fix for timestamps with width spec not handled (ID: 1628)
-            warn "WARNING for in table '$table' '$_': your default timestamp width is being ignored for table $table \n";
-            s/($sl)timestamp(?:\(\d+\))/$1datetime/i;              
-        }
-    } # end timestamp section
+	    }
+	    if ($tables_first_timestamp_column && m/DEFAULT NULL/i) {  
+		# DEFAULT NULL is the same as DEFAULT CURRENT_TIMESTAMP for the first TIMESTAMP  column. (MYSQL manual)
+		s/($sl)(timestamp\s+)default null/$1 $2 DEFAULT CURRENT_TIMESTAMP/i;
+	    }
+	    $tables_first_timestamp_column= 0;
+	    if (m/${sl}timestamp\s*\(\d+\)/i) {   # fix for timestamps with width spec not handled (ID: 1628)
+		warn "WARNING for in table '$table' '$_': your default timestamp width is being ignored for table $table \n";
+		s/($sl)timestamp(?:\(\d+\))/$1datetime/i;              
+	    }
+	} # end timestamp section
 
-    # KEY AND UNIQUE CREATIONS
-    #  
+	# KEY AND UNIQUE CREATIONS
+	#  
 	# unique 
 	if ( /^\s+unique\s+\(([^(]+)\)/i ) { #  example    UNIQUE `name` (`name`), same as UNIQUE KEY
 	    #  POSTGRESQL:  treat same as mysql unique
@@ -726,150 +738,150 @@ update_".$table_no_quotes."();\n";
             #  MYSQL: unique  key: allows null=YES, allows duplicates=NO (*)
             #  ... new ... UNIQUE KEY `unique_fullname` (`fullname`)  in my mysql v. Ver 14.12 Distrib 5.1.7-beta
             #  POSTGRESQL:  treat same as mysql unique
-		# just quote columns
+	    # just quote columns
 	    $quoted_column = quote_and_lc($2); 
             s/\s+unique\s+key\s*(\w+)\s*\(([^(]+)\)/ unique ($quoted_column) /i;		 
             $create_sql.=$_;
-		# the index corresponding to the 'key' is automatically created
+	    # the index corresponding to the 'key' is automatically created
             next;
 	}
 	# keys
-    if ( /^\s+fulltext key\s+/i) { # example:  FULLTEXT KEY `commenttext` (`commenttext`)
-	# that is key as a word in the first check for a match
-        # the tsvector datatype is made for these types of things
-        # example mysql file:
-        #  what is tsvector datatype?
-        #  http://www.sai.msu.su/~megera/postgres/gist/tsearch/V2/docs/tsearch-V2-intro.html
-        warn "dba must do fulltext key transformation for $table\n";
-        next;
-    } 
+	if ( /^\s+fulltext key\s+/i) { # example:  FULLTEXT KEY `commenttext` (`commenttext`)
+	    # that is key as a word in the first check for a match
+	    # the tsvector datatype is made for these types of things
+	    # example mysql file:
+	    #  what is tsvector datatype?
+	    #  http://www.sai.msu.su/~megera/postgres/gist/tsearch/V2/docs/tsearch-V2-intro.html
+	    warn "dba must do fulltext key transformation for $table\n";
+	    next;
+	} 
 	if ( /^(\s+)constraint (\S+) foreign key \((\S+)\) references (\S+) \((\S+)\)(.*)/i ) {
-        $quoted_column =quote_and_lc($3);  
-        $col=quote_and_lc($5);  
-        $post_create_sql .= "ALTER TABLE $table ADD FOREIGN KEY ($quoted_column) REFERENCES " . quote_and_lc($4) . " ($col);\n";
-        next;
-    } 
+	    $quoted_column =quote_and_lc($3);  
+	    $col=quote_and_lc($5);  
+	    $post_create_sql .= "ALTER TABLE $table ADD FOREIGN KEY ($quoted_column) REFERENCES " . quote_and_lc($4) . " ($col);\n";
+	    next;
+	} 
 	if ( /^\s*primary key\s*\(([^)]+)\)([,\s]+)/i ) { #  example    PRIMARY KEY (`name`)
-        # MYSQL: primary key: allows null=NO , allows duplicates=NO
-        #  POSTGRESQL: When an index is declared unique, multiple table rows with equal indexed values will not be 
-        #       allowed. Null values are not considered equal.
-        #  POSTGRESQL quote's source: 8.1.3 docs section 11.5 "unique indexes"                
-		#  so, in postgres, we need to add a NOT NULL to the UNIQUE constraint
-		# and, primary key (mysql) == primary key (postgres) so that we *really* don't need change anything
-        $quoted_column = quote_and_lc($1); 
-        s/(\s*)primary key\s+\(([^)]+)\)([,\s]+)/$1 primary key ($quoted_column)$3/i;                
-		# indexes are automatically created for unique columns
-        $create_sql.=$_;
-        next;
-    } elsif (m/^\s+key\s[-_\s\w]+\((.+)\)/i	) {	 # example:   KEY `idx_mod_english_def_word` (`word`),
-        # regular key: allows null=YES, allows duplicates=YES
-        # MYSQL:   KEY is normally a synonym for INDEX.  http://dev.mysql.com/doc/refman/5.1/en/create-table.html
-        # 
-        #  * MySQL: ALTER TABLE {$table} ADD KEY $column ($column)
-        #  * PostgreSQL: CREATE INDEX {$table}_$column_idx ON {$table}($column) // Please note the _idx "extension" 
-        #    PRIMARY KEY (`postid`),
-        #    KEY `ownerid` (`ownerid`)
-        # create an index for everything which has a key listed for it.
-        my $col = $1;
-        # TODO we don't have a translation for the substring syntax in text columns in MySQL (e.g. "KEY my_idx (mytextcol(20))")
-        # for now just getting rid of the brackets and numbers (the substring specifier):
-        $col=~s/\(\d+\)//g;
-        $quoted_column = quote_and_lc($col);
-        if ($col =~ m/,/) { 
-            $col =  s/,/_/;
-        } 
-        $index = get_identifier($table, $col, 'idx');
-        $post_create_sql.="CREATE INDEX $index ON $table USING btree ($quoted_column)\;";
-        # just create index do not add to create table statement
-        next;
-    }
+	    # MYSQL: primary key: allows null=NO , allows duplicates=NO
+	    #  POSTGRESQL: When an index is declared unique, multiple table rows with equal indexed values will not be 
+	    #       allowed. Null values are not considered equal.
+	    #  POSTGRESQL quote's source: 8.1.3 docs section 11.5 "unique indexes"                
+	    #  so, in postgres, we need to add a NOT NULL to the UNIQUE constraint
+	    # and, primary key (mysql) == primary key (postgres) so that we *really* don't need change anything
+	    $quoted_column = quote_and_lc($1); 
+	    s/(\s*)primary key\s+\(([^)]+)\)([,\s]+)/$1 primary key ($quoted_column)$3/i;                
+	    # indexes are automatically created for unique columns
+	    $create_sql.=$_;
+	    next;
+	} elsif (m/^\s+key\s[-_\s\w]+\((.+)\)/i	) {	 # example:   KEY `idx_mod_english_def_word` (`word`),
+	    # regular key: allows null=YES, allows duplicates=YES
+	    # MYSQL:   KEY is normally a synonym for INDEX.  http://dev.mysql.com/doc/refman/5.1/en/create-table.html
+	    # 
+	    #  * MySQL: ALTER TABLE {$table} ADD KEY $column ($column)
+	    #  * PostgreSQL: CREATE INDEX {$table}_$column_idx ON {$table}($column) // Please note the _idx "extension" 
+	    #    PRIMARY KEY (`postid`),
+	    #    KEY `ownerid` (`ownerid`)
+	    # create an index for everything which has a key listed for it.
+	    my $col = $1;
+	    # TODO we don't have a translation for the substring syntax in text columns in MySQL (e.g. "KEY my_idx (mytextcol(20))")
+	    # for now just getting rid of the brackets and numbers (the substring specifier):
+	    $col=~s/\(\d+\)//g;
+	    $quoted_column = quote_and_lc($col);
+	    if ($col =~ m/,/) { 
+		$col =  s/,/_/;
+	    } 
+	    $index = get_identifier($table, $col, 'idx');
+	    $post_create_sql.="CREATE INDEX $index ON $table USING btree ($quoted_column)\;";
+	    # just create index do not add to create table statement
+	    next;
+	}
 
 	# handle 'key' declared at end of column
-    if (/\w+.*primary key/i) {   # mysql: key is normally just a synonym for index
-	# just leave as is ( postgres has primary key type)
+	if (/\w+.*primary key/i) {   # mysql: key is normally just a synonym for index
+	    # just leave as is ( postgres has primary key type)
 
 
-    } elsif (/(\w+\s+(?:$mysql_datatypesStr)\s+.*)key/i) {   # mysql: key is normally just a synonym for index
-	# I can't find a reference for 'key' in a postgres command without using the word 'primary key'
-    	s/$1key/$1/i ;   
-        $index = get_identifier($table, $1, 'idx');
-        $quoted_column =quote_and_lc($1);  
-        $post_create_sql.="CREATE INDEX $index ON $table USING btree ($quoted_column) \;";
-        $create_sql.=$_;
-    }
+	} elsif (/(\w+\s+(?:$mysql_datatypesStr)\s+.*)key/i) {   # mysql: key is normally just a synonym for index
+	    # I can't find a reference for 'key' in a postgres command without using the word 'primary key'
+	    s/$1key/$1/i ;   
+	    $index = get_identifier($table, $1, 'idx');
+	    $quoted_column =quote_and_lc($1);  
+	    $post_create_sql.="CREATE INDEX $index ON $table USING btree ($quoted_column) \;";
+	    $create_sql.=$_;
+	}
 
 
 
-    # do we really need this anymore?
-    # remap colums with names of existing system attribute 
-    if (/"oid"/i) {
-        s/"oid"/"_oid"/g;
-        print STDERR "WARNING: table $table uses column \"oid\" which is renamed to \"_oid\"\nYou should fix application manually! Press return to continue.";
-        my $wait=<STDIN>;
-    }
+	# do we really need this anymore?
+	# remap colums with names of existing system attribute 
+	if (/"oid"/i) {
+	    s/"oid"/"_oid"/g;
+	    print STDERR "WARNING: table $table uses column \"oid\" which is renamed to \"_oid\"\nYou should fix application manually! Press return to continue.";
+	    my $wait=<STDIN>;
+	}
 	
-    s/oid/_oid/i if (/key/i && /oid/i); # fix oid in key
+	s/oid/_oid/i if (/key/i && /oid/i); # fix oid in key
 
-    # FINAL QUOTING OF ALL COLUMNS
-    # quote column names which were not already quoted
-    # perhaps they were not quoted because they were not explicitly handled
-    if (!/^\s*"(\w+)"(\s+)/i) {
-        /^(\s*)(\w+)(\s+)(.*)$/i ;
-        $quoted_column= quote_and_lc($2);
-        s/^(\s*)(\w+)(\s+)(.*)$/$1 $quoted_column $3 $4 /;
-    }
-    $create_sql.=$_;
- #  END of if ($create_sql ne "") i.e. were inside create table statement so processed datatypes
-} 
+	# FINAL QUOTING OF ALL COLUMNS
+	# quote column names which were not already quoted
+	# perhaps they were not quoted because they were not explicitly handled
+	if (!/^\s*"(\w+)"(\s+)/i) {
+	    /^(\s*)(\w+)(\s+)(.*)$/i ;
+	    $quoted_column= quote_and_lc($2);
+	    s/^(\s*)(\w+)(\s+)(.*)$/$1 $quoted_column $3 $4 /;
+	}
+	$create_sql.=$_;
+	#  END of if ($create_sql ne "") i.e. were inside create table statement so processed datatypes
+    } 
 # add "not in create table" comments or empty lines to pre_create_sql
-elsif (/^#/ || /^$/ || /^\s*--/) { 
-    s/^#/--/;   #  Two hyphens (--) is the SQL-92 standard indicator for comments
-    $pre_create_sql .=  $_ ;  # printed above create table statement
-    next;
-}
-elsif (/^\s*insert into/i) { # not inside create table and doing insert
-    # fix mysql's zero/null value for timestamps
-    s/'0000-00-00/'1970-01-01/gi;
-    s/([12]\d\d\d)([01]\d)([0-3]\d)([0-2]\d)([0-6]\d)([0-6]\d)/'$1-$2-$3 $4:$5:$6'/;
-
-    #---- fix data in inserted data: (from MS world)
-    s!\x96!-!g;	# --
-    s!\x93!"!g;	# ``
-    s!\x94!"!g;	# ''
-    s!\x85!... !g;	# \ldots
-    s!\x92!`!g;
-
-    print OUT $pre_create_sql;    # print comments preceding the insert section
-    $pre_create_sql="";
-    
-#    s/'(.*?)'([,)])/E'$1'$2/g;
-    # for the E'' see http://www.postgresql.org/docs/8.2/interactive/release-8-1.html
-
-    # split 'extended' INSERT INTO statements to something PostgreSQL can  understand
-    ( $insert_table,  $valueString) = $_ =~ m/^INSERT\s+INTO\s+['`"]*(.*?)['`"]*\s+VALUES\s*(.*)/i;
-    $insert_table = "ocs_$insert_table";
-    $insert_table = quote_and_lc($insert_table);
-    # parse valueString
-    my @rows = $valueString =~ m/$rowRe/g;
-
-    s/^INSERT INTO.*?\);//i;  # hose the statement which is to be replaced whether a run-on or not
-    # only convert INSERT INTO statements with multiple values
-    if (@rows > 1)
-    {
-        for my $row (@rows)
-        {
-            print OUT qq(INSERT INTO $insert_table VALUES ($row);\n);
-        }
-
-        # end command
-        print OUT  "\n";
-    } else {   # guarantee table names are quoted
-        print OUT qq(INSERT INTO $insert_table VALUES $valueString \n);
+    elsif (/^#/ || /^$/ || /^\s*--/) { 
+	s/^#/--/;   #  Two hyphens (--) is the SQL-92 standard indicator for comments
+	$pre_create_sql .=  $_ ;  # printed above create table statement
+	next;
     }
+    elsif (/^\s*insert into/i) { # not inside create table and doing insert
+	# fix mysql's zero/null value for timestamps
+	s/'0000-00-00/'1970-01-01/gi;
+	s/([12]\d\d\d)([01]\d)([0-3]\d)([0-2]\d)([0-6]\d)([0-6]\d)/'$1-$2-$3 $4:$5:$6'/;
 
-} else {  #  
-    print OUT $_ ;  #  example: /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-}
+	#---- fix data in inserted data: (from MS world)
+	s!\x96!-!g;	# --
+	s!\x93!"!g;	# ``
+	s!\x94!"!g;	# ''
+	s!\x85!... !g;	# \ldots
+	s!\x92!`!g;
+
+	print OUT $pre_create_sql;    # print comments preceding the insert section
+	$pre_create_sql="";
+	
+#    s/'(.*?)'([,)])/E'$1'$2/g;
+	# for the E'' see http://www.postgresql.org/docs/8.2/interactive/release-8-1.html
+
+	# split 'extended' INSERT INTO statements to something PostgreSQL can  understand
+	( $insert_table,  $valueString) = $_ =~ m/^INSERT\s+INTO\s+['`"]*(.*?)['`"]*\s+VALUES\s*(.*)/i;
+	$insert_table = "ocs_$insert_table";
+	$insert_table = quote_and_lc($insert_table);
+	# parse valueString
+	my @rows = $valueString =~ m/$rowRe/g;
+
+	s/^INSERT INTO.*?\);//i;  # hose the statement which is to be replaced whether a run-on or not
+	# only convert INSERT INTO statements with multiple values
+	if (@rows > 1)
+	{
+	    for my $row (@rows)
+	    {
+		print OUT qq(INSERT INTO $insert_table VALUES ($row);\n);
+	    }
+
+	    # end command
+	    print OUT  "\n";
+	} else {   # guarantee table names are quoted
+	    print OUT qq(INSERT INTO $insert_table VALUES $valueString \n);
+	}
+
+    } else {  #  
+	print OUT $_ ;  #  example: /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+    }
 #  keep looping and get next line of IN file
 
 } # END while(<IN>) 
@@ -883,10 +895,10 @@ print_post_create_sql();   # in case there is extra from the last table
 #################################################################
 #
 sub make_plpgsql {
-my ($table,$column_name) = ($_[0],$_[1]);
-$table=~s/\"//g; # make sure that $table doesn't have quotes so we don't end up with redundant quoting
-my $constraint_table = get_identifier($table,$column_name ,"constraint_table");
-return "
+    my ($table,$column_name) = ($_[0],$_[1]);
+    $table=~s/\"//g; # make sure that $table doesn't have quotes so we don't end up with redundant quoting
+    my $constraint_table = get_identifier($table,$column_name ,"constraint_table");
+    return "
 -- this function is called by the insert/update trigger
 -- it checks if the INSERT/UPDATE for the 'set' column
 -- contains members which comprise a valid mysql set
