@@ -56,6 +56,7 @@
   <msg key="lt_Computer_Video_Device">Computer Video Device</msg>
   <msg key="Mainframe">Mainframe</msg>
   <msg key="Memory">Memory</msg>
+  <msg key="Name">Name</msg>
   <msg key="Netmap">Netmap</msg>
   <msg key="Network">Network</msg>
   <msg key="Network_Device">Network Device</msg>
@@ -88,8 +89,10 @@
   <msg key="Specs">Specs</msg>
   <msg key="Sub_Items">Sub-Items</msg>
   <msg key="Subnet">Subnet</msg>
+  <msg key="There_are_no_active_conf_items">There are no active configuration items for this query</msg>
   <msg key="Ticket_Name">Ticket Name</msg>
   <msg key="Top_Items">Top Items</msg>
+  <msg key="Type">Type</msg>
   <msg key="Unassociate">Unassociate</msg>
   <msg key="Workgroup">Workgroup</msg>
   <msg key="Workstation">Workstation</msg>
