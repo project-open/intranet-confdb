@@ -688,11 +688,29 @@ ad_proc -public im_conf_item_list_component {
 	lappend criteria "ci.conf_item_id in ([join $result_list ","])"
     }
 
+    if {![im_permission $user_id "view_conf_items_all"]} {
+	lappend criteria "ci.conf_item_id in (
+			select	ci.conf_item_id
+			from	im_conf_items ci,
+				acs_rels r
+			where	r.object_id_one = ci.conf_item_id and 
+				r.object_id_two = :user_id
+			)
+	"
+	lappend criteria "parent.conf_item_id in (
+			select	ci.conf_item_id
+			from	im_conf_items ci,
+				acs_rels r
+			where	r.object_id_one = ci.conf_item_id and 
+				r.object_id_two = :user_id
+			)
+	"
+    }
+
     set restriction_clause [join $criteria "\n\tand "]
     if {"" != $restriction_clause} { 
 	set restriction_clause "and $restriction_clause" 
     }
-
 
     set extra_select [join $extra_selects ",\n\t"]
     if { ![empty_string_p $extra_select] } { set extra_select ",\n\t$extra_select" }
@@ -704,62 +722,30 @@ ad_proc -public im_conf_item_list_component {
     if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
 
 
-    # ---------------------- Inner Permission Query -------------------------
-    # Check permissions for showing subconf_items
-    set child_perm_sql "
-			select	ci.* 
-			from	im_conf_items ci,
-				acs_rels r 
-			where	r.object_id_one = ci.conf_item_id and 
-				r.object_id_two = :user_id
-				$restriction_clause
-    "
-
-    if {[im_permission $user_id "view_conf_items_all"]} { 
-	set child_perm_sql "
-			select	ci.*
-			from	im_conf_items ci
-			where	1=1
-				$restriction_clause
-	"
-    }
-
-    set parent_perm_sql "
-			select	ci.*
-			from	im_conf_items ci,
-				acs_rels r
-			where	r.object_id_one = ci.conf_item_id and 
-				r.object_id_two = :user_id
-    "
-
-    if {[im_permission $user_id "view_conf_items_all"]} {
-	set parent_perm_sql "
-			select	ci.*
-			from	im_conf_items ci
-			where	1=1
-	"
-    }
-
-
     # ---------------------- Get the SQL Query -------------------------
     set sql "
 	select
-		child.*,
-		tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as conf_item_level,
-		im_category_from_id(child.conf_item_status_id) as conf_item_status,
-		im_category_from_id(child.conf_item_type_id) as conf_item_type
+		ci.*,
+		tree_level(ci.tree_sortkey) - tree_level(parent.tree_sortkey) as conf_item_level,
+		im_category_from_id(ci.conf_item_status_id) as conf_item_status,
+		im_category_from_id(ci.conf_item_type_id) as conf_item_type
 		$extra_select
 	from
-		($parent_perm_sql) parent,
-		($child_perm_sql) child
+		im_conf_items parent,
+		im_conf_items ci
 		$extra_from
 	where
-		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-		child.conf_item_status_id not in ([im_conf_item_status_deleted])
+		parent.conf_item_parent_id is null and
+		ci.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
+		ci.conf_item_status_id not in ([im_conf_item_status_deleted])
+		$restriction_clause
 		$extra_where
-	order by
-		child.tree_sortkey
     "
+    # fraber 150113: Sorting breaks the query!!!
+    # Maybe the table needs an index on tree_sortkey?
+    set ttt {
+	order by ci.tree_sortkey
+    }
 
     db_multirow conf_item_list_multirow conf_item_list_sql $sql {
 
