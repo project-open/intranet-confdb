@@ -15,11 +15,12 @@ ad_page_contract {
     @parameter view_name Set to "component" in order to show a specific component
 } {
     conf_item_id:integer,optional
-    { return_url "" }
-    { form_mode "" }
+    { return_url "/intranet-confdb/index"}
+    { form_mode "display" }
     { view_name "" }
     conf_item_type_id:integer,optional
     { conf_item_project_id "" }
+    { enable_master_p 1}
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -28,16 +29,18 @@ if {![im_permission $current_user_id "add_conf_items"]} {
     ad_script_abort
 }
 
-set user_admin_p 1
-set enable_master_p 1
+set current_url [im_url_with_query]
+set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set table_ocs_hardware_exists_p [im_table_exists "ocs_hardware"]
 set focus ""
 set sub_navbar ""
-set current_url [im_url_with_query]
 
 
 # org_conf_item_id required by Portlet Components!
 set org_conf_item_id [im_opt_val conf_item_id]
 
+set page_title [lang::message::lookup "" intranet-confdb.New_Conf_Item "New Configuration Item"]
+set show_components_p 0
 if {"display" == $form_mode || "" == $form_mode} {
     set page_title [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]
     set show_components_p 1
@@ -45,21 +48,7 @@ if {"display" == $form_mode || "" == $form_mode} {
     # Write Audit Trail
     if {[info exists conf_item_id]} {
 	im_audit -object_type "im_conf_item" -object_id $conf_item_id -action before_view
-
-	set conf_item_exists_p [db_string exists "select count(*) from im_conf_items where conf_item_id = :conf_item_id"]
-	if {!$conf_item_exists_p} {
-	    ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-confdb.Conf_Item_doesnt_exist "Configuration Item #%conf_item_id% doesn't exist"]</b><br>
-	    &nbsp;<br>
-	    [lang::message::lookup "" intranet-confdb.Conf_Item_doesnt_exist_message "
-	    	The system didn't find the configuration item with the ID #%conf_item_id%.<br>
-		Please contact your system administrator.
-	    "]"
-	}
     }
-
-} else {
-    set page_title [lang::message::lookup "" intranet-confdb.New_Conf_Item "New Configuration Item"]
-    set show_components_p 0
 }
 set context_bar [im_context_bar $page_title]
 
@@ -293,11 +282,10 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 
 set hardware_id [db_string hardware_id "select ocs_id from im_conf_items where conf_item_id = :org_conf_item_id" -default 0]
 set result ""
-
-if {[im_table_exists "ocs_hardware"]} {
-
-	if {"" == $conf_item_type_id} { set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :org_conf_item_id" -default 0]}
-
+if {$table_ocs_hardware_exists_p} {
+    if {"" == $conf_item_type_id} { 
+	set conf_item_type_id [db_string type "select conf_item_type_id from im_conf_items where conf_item_id = :org_conf_item_id" -default 0]
+    }
     if {[im_category_is_a $conf_item_type_id 11850]} {
 
 append result [im_generic_table_component -table_name "ocs_drives" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
@@ -319,15 +307,6 @@ append result [im_generic_table_component -table_name "ocs_softwares" -select_co
 # append result [im_generic_table_component -table_name "ocs_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 # append result [im_generic_table_component -table_name "ocs_locks" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
 # append result [im_generic_table_component -table_name "ocs_network_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
-
     }
 }
-
-
-# ---------------------------------------------------------------
-# 
-# ---------------------------------------------------------------
-
-ad_return_template
-
 
