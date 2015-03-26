@@ -135,7 +135,7 @@ alter table im_conf_items add
 -- This is the sortkey code
 --
 create or replace function im_conf_item_insert_tr ()
-returns trigger as '
+returns trigger as $$
 declare
 	v_max_child_sortkey	im_conf_items.max_child_sortkey%TYPE;
 	v_parent_sortkey	im_conf_items.tree_sortkey%TYPE;
@@ -157,7 +157,7 @@ begin
 	END IF;
 	new.max_child_sortkey := null;
 	return new;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 create trigger im_conf_item_insert_tr
 before insert on im_conf_items
@@ -167,7 +167,7 @@ execute procedure im_conf_item_insert_tr();
 
 
 create or replace function im_conf_items_update_tr () 
-returns trigger as '
+returns trigger as $$
 declare
 	v_parent_sk	varbit default null;
 	v_max_child_sortkey	varbit;
@@ -204,7 +204,7 @@ begin
 	WHERE tree_sortkey between new.tree_sortkey and tree_right(new.tree_sortkey);
 
 	return new;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 create trigger im_conf_items_update_tr after update
 on im_conf_items
@@ -221,7 +221,7 @@ execute procedure im_conf_items_update_tr ();
 create or replace function im_conf_item__new (
 	integer, varchar, timestamptz, integer, varchar, integer,
 	varchar, varchar, integer, integer, integer
-) returns integer as '
+) returns integer as $$
 DECLARE
 	p_conf_item_id		alias for $1;
 	p_object_type		alias for $2;
@@ -254,9 +254,10 @@ BEGIN
 		p_conf_item_parent_id, p_conf_item_type_id, p_conf_item_status_id
 	);
 	return v_conf_item_id;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
-create or replace function im_conf_item__delete (integer) returns integer as '
+create or replace function im_conf_item__delete (integer) 
+returns integer as $$
 DECLARE
 	v_conf_item_id		alias for $1;
 BEGIN
@@ -271,9 +272,10 @@ BEGIN
 	PERFORM	acs_object__delete(v_conf_item_id);
 
 	return 0;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
-create or replace function im_conf_item__name (integer) returns varchar as '
+create or replace function im_conf_item__name (integer) 
+returns varchar as $$
 DECLARE
 	v_conf_item_id	alias for $1;
 	v_name		varchar;
@@ -284,12 +286,12 @@ BEGIN
 	where	conf_item_id = v_conf_item_id;
 
 	return v_name;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 -- Helper functions to make our queries easier to read
 create or replace function im_conf_item_name_from_id (integer)
-returns varchar as '
+returns varchar as $$
 DECLARE
 	p_conf_item_id		alias for $1;
 	v_conf_item_name	text;
@@ -300,11 +302,11 @@ BEGIN
 	where conf_item_id = p_conf_item_id;
 
 	return v_conf_item_name;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 create or replace function im_conf_item_nr_from_id (integer)
-returns varchar as '
+returns varchar as $$
 DECLARE
 	p_conf_item_id	alias for $1;
 	v_name		text;
@@ -315,7 +317,7 @@ BEGIN
 	where conf_item_id = p_conf_item_id;
 
 	return v_name;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 
@@ -329,38 +331,38 @@ insert into im_search_object_types values (9, 'im_conf_item', 0.8);
 
 
 create or replace function im_conf_items_tsearch ()
-returns trigger as '
+returns trigger as $$
 declare
 	v_string	varchar;
 begin
-	select	coalesce(c.conf_item_code, '''') || '' '' ||
-		coalesce(c.conf_item_name, '''') || '' '' ||
-		coalesce(c.conf_item_nr, '''') || '' '' ||
-		coalesce(c.conf_item_version, '''') || '' '' ||
-		coalesce(c.description, '''') || '' '' ||
-		coalesce(c.ip_address, '''') || '' '' ||
-		coalesce(c.note, '''') || '' '' ||
-		coalesce(c.ocs_deviceid, '''') || '' '' ||
-		coalesce(c.ocs_id, '''') || '' '' ||
-		coalesce(c.ocs_username, '''') || '' '' ||
-		coalesce(c.os_comments, '''') || '' '' ||
-		coalesce(c.os_name, '''') || '' '' ||
-		coalesce(c.os_version, '''') || '' '' ||
-		coalesce(c.processor_text, '''') || '' '' ||
-		coalesce(c.win_company, '''') || '' '' ||
-		coalesce(c.win_owner, '''') || '' '' ||
-		coalesce(c.win_product_id, '''') || '' '' ||
-		coalesce(c.win_product_key, '''') || '' '' ||
-		coalesce(c.win_userdomain, '''') || '' '' ||
-		coalesce(c.win_workgroup, '''')
+	select	coalesce(c.conf_item_code, '') || ' ' ||
+		coalesce(c.conf_item_name, '') || ' ' ||
+		coalesce(c.conf_item_nr, '') || ' ' ||
+		coalesce(c.conf_item_version, '') || ' ' ||
+		coalesce(c.description, '') || ' ' ||
+		coalesce(c.ip_address, '') || ' ' ||
+		coalesce(c.note, '') || ' ' ||
+		coalesce(c.ocs_deviceid, '') || ' ' ||
+		coalesce(c.ocs_id, '') || ' ' ||
+		coalesce(c.ocs_username, '') || ' ' ||
+		coalesce(c.os_comments, '') || ' ' ||
+		coalesce(c.os_name, '') || ' ' ||
+		coalesce(c.os_version, '') || ' ' ||
+		coalesce(c.processor_text, '') || ' ' ||
+		coalesce(c.win_company, '') || ' ' ||
+		coalesce(c.win_owner, '') || ' ' ||
+		coalesce(c.win_product_id, '') || ' ' ||
+		coalesce(c.win_product_key, '') || ' ' ||
+		coalesce(c.win_userdomain, '') || ' ' ||
+		coalesce(c.win_workgroup, '')
 	into    v_string
 	from    im_conf_items c
 	where   c.conf_item_id = new.conf_item_id;
 
-	perform im_search_update(new.conf_item_id, ''im_conf_item'', new.conf_item_id, v_string);
+	perform im_search_update(new.conf_item_id, 'im_conf_item', new.conf_item_id, v_string);
 
 	return new;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 CREATE TRIGGER im_conf_items_tsearch_tr
@@ -624,7 +626,7 @@ select acs_rel_type__create_type (
 
 create or replace function im_conf_item_project_rel__new (
 integer, varchar, integer, integer, integer, integer, varchar, integer)
-returns integer as '
+returns integer as $$
 DECLARE
 	p_rel_id		alias for $1;	-- null
 	p_rel_type		alias for $2;	-- im_conf_item_project_rel
@@ -654,11 +656,11 @@ BEGIN
 	);
 
 	return v_rel_id;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 create or replace function im_conf_item_project_rel__delete (integer)
-returns integer as '
+returns integer as $$
 DECLARE
 	p_rel_id	alias for $1;
 BEGIN
@@ -667,11 +669,11 @@ BEGIN
 
 	PERFORM acs_rel__delete(p_rel_id);
 	return 0;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 create or replace function im_conf_item_project_rel__delete (integer, integer)
-returns integer as '
+returns integer as $$
 DECLARE
         p_project_id	alias for $1;
 	p_conf_item_id	alias for $2;
@@ -685,7 +687,7 @@ BEGIN
 
 	PERFORM im_conf_item_project_rel__delete(v_rel_id);
 	return 0;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
 
 
 
@@ -798,7 +800,7 @@ SELECT im_component_plugin__new (
 
 
 create or replace function inline_0 ()
-returns integer as '
+returns integer as $$
 declare
 	-- Menu IDs
 	v_menu			integer;
@@ -815,45 +817,87 @@ declare
 	v_reg_users		integer;
 BEGIN
 	-- Get some group IDs
-	select group_id into v_admins from groups where group_name = ''P/O Admins'';
-	select group_id into v_senman from groups where group_name = ''Senior Managers'';
-	select group_id into v_proman from groups where group_name = ''Project Managers'';
-	select group_id into v_accounting from groups where group_name = ''Accounting'';
-	select group_id into v_employees from groups where group_name = ''Employees'';
-	select group_id into v_companies from groups where group_name = ''Customers'';
-	select group_id into v_freelancers from groups where group_name = ''Freelancers'';
-	select group_id into v_reg_users from groups where group_name = ''Registered Users'';
+	select group_id into v_admins from groups where group_name = 'P/O Admins';
+	select group_id into v_senman from groups where group_name = 'Senior Managers';
+	select group_id into v_proman from groups where group_name = 'Project Managers';
+	select group_id into v_accounting from groups where group_name = 'Accounting';
+	select group_id into v_employees from groups where group_name = 'Employees';
+	select group_id into v_companies from groups where group_name = 'Customers';
+	select group_id into v_freelancers from groups where group_name = 'Freelancers';
+	select group_id into v_reg_users from groups where group_name = 'Registered Users';
 
 	-- Determine the main menu. "Label" is used to identify menus.
 	select menu_id into v_main_menu 
-	from im_menus where label=''main'';
+	from im_menus where label='main';
 
 	-- Create the menu.
 	v_menu := im_menu__new (
 		null,			-- p_menu_id
-		''acs_object'',		-- object_type
+		'im_menu',		-- object_type
 		now(),			-- creation_date
 		null,			-- creation_user
 		null,			-- creation_ip
 		null,			-- context_id
-		''intranet-confdb'',	-- package_name
-		''conf_items'',		-- label
-		''Conf Items'',		-- name
-		''/intranet-confdb/index'',   -- url
+		'intranet-confdb',	-- package_name
+		'conf_items',		-- label
+		'Conf Items',		-- name
+		'/intranet-confdb/index',   -- url
 		95,			-- sort_order
 		v_main_menu,		-- parent_menu_id
 		null			-- p_visible_tcl
 	);
 
 	-- Grant read permissions to most of the system
-	PERFORM acs_permission__grant_permission(v_menu, v_admins, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_senman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_proman, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_accounting, ''read'');
-	PERFORM acs_permission__grant_permission(v_menu, v_employees, ''read'');
+	PERFORM acs_permission__grant_permission(v_menu, v_admins, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_senman, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_proman, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_accounting, 'read');
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
 
 	return 0;
-end;' language 'plpgsql';
+end;$$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+-----------------------------------------------------------
+-- Create new Conf Item Menu item
+--
+create or replace function inline_0 ()
+returns integer as $$
+declare
+	-- Menu IDs
+	v_menu			integer;
+	v_main_menu		integer;
+	v_employees		integer;
+BEGIN
+	-- Determine the main menu. "Label" is used to identify menus.
+	select menu_id into v_main_menu
+	from im_menus where label='conf_items';
+
+	-- Create the menu.
+	v_menu := im_menu__new (
+		null,				-- p_menu_id
+		'im_menu',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		'intranet-confdb',		-- package_name
+		'conf_items_new',		-- label
+		'Add a new Conf Item',	-- name
+		'/intranet-confdb/new?form%5fmode=edit',	-- url
+		100,				-- sort_order
+		v_main_menu,			-- parent_menu_id
+		'im_permission $user_id add_conf_items'	-- p_visible_tcl
+	);
+
+	-- Grant read permissions to most of the system
+	select group_id into v_employees from groups where group_name = 'Employees';
+
+	return 0;
+end;$$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
@@ -867,7 +911,7 @@ drop function inline_0 ();
 
 SELECT  im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',		-- object_type
 	now(),				-- creation_date
         null,                           -- creation_user
         null,                           -- creation_ip
@@ -887,7 +931,7 @@ SELECT  im_component_plugin__new (
 --
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
-	'acs_object',			-- object_type
+	'im_component_plugin',			-- object_type
 	now(),				-- creation_date
 	null,				-- creation_user
 	null,				-- creation_ip
