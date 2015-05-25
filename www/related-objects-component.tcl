@@ -96,11 +96,44 @@ set object_rel_sql "
 			r.object_id_one = o.object_id and
 			r.object_id_two = :conf_item_id
 		)
-	order by
-		direction
 "
 
-db_multirow -extend { ticket_chk object_url direction_pretty rel_name } tickets_multirow object_rels $object_rel_sql {
+set ticket_sql "
+	select
+		t.ticket_id as object_id,
+		p.project_name as object_name,
+		'im_ticket' object_type,
+		'Ticket' object_type_pretty,	
+		'/intranet-helpdesk/new?form_mode=display&ticket_id=' as object_url_base,
+		null as rel_id,
+		'ticket_reference' rel_type,
+		'Ticket Reference' rel_type_pretty,
+		'outgoing' as direction
+	from	im_tickets t,
+		im_projects p
+	where	p.project_id = t.ticket_id and
+		t.ticket_status_id in (select * from im_sub_categories([im_ticket_status_open])) and
+		(	t.ticket_service_id = :conf_item_id
+		OR	t.ticket_hardware_id = :conf_item_id
+		OR	t.ticket_conf_item_id = :conf_item_id
+		)
+"
+
+
+set object_sql "
+	select	*
+	from	(
+		$object_rel_sql
+	UNION
+		$ticket_sql
+		) t
+	order by
+		direction,
+		object_type_pretty,
+		object_id
+"
+
+db_multirow -extend { ticket_chk object_url direction_pretty rel_name } tickets_multirow object_rels $object_sql {
     set object_url "$object_url_base$object_id"
     set ticket_chk "<input type=\"checkbox\" 
 				name=\"rel_id\" 
