@@ -974,13 +974,13 @@ from
 	im_conf_items ci
 where
 	ci.conf_item_parent_id is null and
-	(''t'' = acs_permission__permission_p([subsite::main_site_id], [ad_get_user_id], ''view_conf_items_all'') OR
+	(''t'' = acs_permission__permission_p([subsite::main_site_id], [ad_conn user_id], ''view_conf_items_all'') OR
 	conf_item_id in (
 		-- User is explicit member of conf item
 		select  ci.conf_item_id
 		from    im_conf_items ci,
 			acs_rels r
-		where   r.object_id_two = [ad_get_user_id] and
+		where   r.object_id_two = [ad_conn user_id] and
 			r.object_id_one = ci.conf_item_id
 	UNION
 		-- User belongs to project that belongs to conf item
@@ -989,7 +989,7 @@ where
 			im_projects p,
 			acs_rels r1,
 			acs_rels r2
-		where   r1.object_id_two = [ad_get_user_id] and
+		where   r1.object_id_two = [ad_conn user_id] and
 			r1.object_id_one = p.project_id and
 			r2.object_id_two = ci.conf_item_id and
 			r2.object_id_one = p.project_id
@@ -1001,7 +1001,7 @@ where
 			im_projects p,
 			acs_rels r1,
 			acs_rels r2
-		where   r1.object_id_two = [ad_get_user_id] and
+		where   r1.object_id_two = [ad_conn user_id] and
 			r1.object_id_one = c.company_id and
 			p.company_id = c.company_id and
 			r2.object_id_two = ci.conf_item_id and
