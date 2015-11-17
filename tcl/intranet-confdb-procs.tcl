@@ -84,7 +84,7 @@ namespace eval im_conf_item {
 	# If we are not connected then use some system defaults.
 	if {[ns_conn isconnected]} { 
 	    set peeraddr [ad_conn peeraddr] 
-	    set current_user_id [ad_get_user_id]
+	    set current_user_id [ad_conn user_id]
 	} else {
 	    set peeraddr "0.0.0.0"
 	    set current_user_id [util_memoize [list db_string first_user "select min(person_id) from persons where person_id > 0" -default 0]]
@@ -197,7 +197,7 @@ ad_proc -public im_conf_item_select_sql {
 } {
     # Prepare and check some variables.
     set current_user_id 0
-    if {[ns_conn isconnected]} { set current_user_id [ad_get_user_id] }
+    if {[ns_conn isconnected]} { set current_user_id [ad_conn user_id] }
 
     # base url, where only the conf_item_id has to be added
     set conf_item_base_url "/intranet-confdb/new?form_mode=display&conf_item_id="
@@ -457,7 +457,7 @@ ad_proc -public im_conf_item_list_component {
     a project, a user or a ticket.
 } {
     # ---------------------- Security - Show the comp? -------------------------------
-    set user_id [ad_get_user_id]
+    set user_id [ad_conn user_id]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
 
     if {"" == $member_id || 0 == $member_id} { set member_id $restrict_to_member_id }
@@ -1076,7 +1076,7 @@ ad_proc -public im_conf_item_new_project_rel {
 		:project_id,
 		:conf_item_id,
 		null,
-		[ad_get_user_id],
+		[ad_conn user_id],
 		'[ad_conn peeraddr]',
 		:sort_order
 	)
@@ -1108,7 +1108,7 @@ ad_proc -public im_navbar_tree_confdb { } {
     system's main NavBar.
 } {
     set wiki [im_navbar_doc_wiki]
-    set current_user_id [ad_get_user_id]
+    set current_user_id [ad_conn user_id]
     set html "
 	<li><a href=/intranet-confdb/index>[lang::message::lookup "" intranet-confdb.Conf_Management "Config Management"]</a>
 	<ul>
