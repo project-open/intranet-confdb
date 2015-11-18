@@ -954,7 +954,7 @@ ad_proc -public im_conf_item_list_component {
 
     set component_html "
 	<form action=/intranet-confdb/conf_item-action method=POST>
-	[export_form_vars conf_item_id return_url]
+	[export_vars -form {conf_item_id return_url}]
 	<table bgcolor=white border=0 cellpadding=1 cellspacing=1 class=\"table_list_page\">
 	  $table_header_html
 	  $table_body_html
