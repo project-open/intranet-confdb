@@ -256,3 +256,5 @@ set left_navbar_html "
       $admin_links
     </div>
 "
+
+
