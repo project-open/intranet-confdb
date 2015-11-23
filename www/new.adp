@@ -6,11 +6,11 @@
 <master src="../../intranet-core/www/master">
 </if>
 
-<property name="title">@page_title@</property>
-<property name="context">@context_bar@</property>
+<property name="doc(title)">@page_title;literal@</property>
+<property name="context">@context_bar;literal@</property>
 <property name="main_navbar_label">conf_items</property>
-<property name="focus">@focus;noquote@</property>
-<property name="sub_navbar">@sub_navbar;noquote@</property>
+<property name="focus">@focus;literal@</property>
+<property name="sub_navbar">@sub_navbar;literal@</property>
 
 <if @message@ not nil>
   <div class="general-message">@message@</div>

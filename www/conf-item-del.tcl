@@ -22,7 +22,7 @@ ad_page_contract {
 # ---------------------------------------------------------------
 
 # User id already verified by filters
-set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_id [auth::require_login]
 set del_p [im_permission $current_user_id "add_conf_items"]
 if {!$del_p} { 
     ad_return_complaint 1 "Not sufficient permissions" 

@@ -22,7 +22,7 @@ if {![info exists object_id]} {
 }
 
 if {![info exists return_url] || "" == $return_url} { set return_url [im_url_with_query] }
-set current_user_id [ad_maybe_redirect_for_registration]
+set current_user_id [auth::require_login]
 set user_admin_p 1
 set project_id $object_id
 

@@ -1,5 +1,5 @@
 <master>
-<property name="title">@page_title@</property>
+<property name="doc(title)">@page_title;literal@</property>
 <property name="context">#intranet-core.context#</property>
 <property name="main_navbar_label">confdb</property>
 
@@ -14,13 +14,13 @@
 <%= [export_vars -form {cid return_url}] %>
 <table>
 	<tr>
-	<th colspan=2><%= [lang::message::lookup "" intranet-confdb.Associate_With "Associate With"] %></th>
+	<th colspan="2"><%= [lang::message::lookup "" intranet-confdb.Associate_With "Associate With"] %></th>
 	<th>	<%= [lang::message::lookup "" intranet-confdb.Object Object] %></th>
 	<th>	<%= [lang::message::lookup "" intranet-confdb.Comment Comment] %></th>
 	</tr>
 
 	<tr>
-	<td>	<input type=radio name=target_object_type value=user></td>
+	<td>	<input type="radio" name="target_object_type" value="user"></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Object_Type_User "User"] %></td>
 	<td>	<%= [im_user_select -group_id [im_customer_group_id] user_id ""] %><br>
 		<%= [lang::message::lookup "" intranet-confdb.Associate_As "as"] %>&nbsp;
@@ -33,7 +33,7 @@
 	</tr>
 
 	<tr>
-	<td>	<input type=radio name=target_object_type value=project></td>
+	<td>	<input type="radio" name="target_object_type" value="project"></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Object_Type_Project "Project"] %></td>
 	<td>	<%= [im_project_select -exclude_subprojects_p 0 project_id] %></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Associate_Msg_Project "
@@ -42,7 +42,7 @@
 	</tr>
 
 	<tr>
-	<td>	<input type=radio name=target_object_type value=ticket></td>
+	<td>	<input type="radio" name="target_object_type" value="ticket"></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Object_Type_Ticket Ticket] %></td>
 	<td>	<%= [im_select -translate_p 0 -ad_form_option_list_style_p 1 ticket_id [im_ticket_options]] %></td>
 	<td>	<%= [lang::message::lookup "" intranet-confdb.Associate_Msg_Ticket "
@@ -52,7 +52,7 @@
 
 	<tr>
 	<td>&nbsp;</td>
-	<td><input type=submit name=submit value="<%= [lang::message::lookup "" intranet-confdb.Associate_Assoc_Action Associate] %>"></td>
+	<td><input type="submit" name="submit" value="<%= [lang::message::lookup "" intranet-confdb.Associate_Assoc_Action Associate] %>"></td>
 	<td>&nbsp;</td>
 	</tr>
 

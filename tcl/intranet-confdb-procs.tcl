@@ -145,7 +145,7 @@ namespace eval im_conf_item {
 	# Update the item with additional variables from the vars array
 	set sql_list [list]
 	foreach var [array names vars] {
-	    if {$var == "conf_item_id"} { continue }
+	    if {$var eq "conf_item_id"} { continue }
 	    lappend sql_list "$var = :$var"
 	}
 	set sql "
@@ -413,7 +413,7 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
     set user_is_group_admin_p [im_biz_object_admin_p $user_id $conf_item_id]
 
     # Admin permissions to global + intranet admins + group administrators
-    set user_admin_p [expr $user_is_admin_p || $user_is_group_admin_p || $user_is_wheel_p]
+    set user_admin_p [expr {$user_is_admin_p || $user_is_group_admin_p || $user_is_wheel_p}]
 
     if {$user_admin_p} {
 	set read 1
@@ -479,7 +479,7 @@ ad_proc -public im_conf_item_list_component {
     # Get the start_idx in case of pagination
     set start_idx [ns_set get $form_vars "conf_item_start_idx"]
     if {"" == $start_idx} { set start_idx 0 }
-    set end_idx [expr $start_idx + $max_entries_per_page - 1]
+    set end_idx [expr {$start_idx + $max_entries_per_page - 1}]
 
     set bgcolor(0) " class=roweven"
     set bgcolor(1) " class=rowodd"
@@ -488,7 +488,7 @@ ad_proc -public im_conf_item_list_component {
     set current_url [im_url_with_query]
 
     if {![info exists current_page_url]} { set current_page_url [ad_conn url] }
-    if {![exists_and_not_null return_url]} { set return_url $current_url }
+    if {(![info exists return_url] || $return_url eq "")} { set return_url $current_url }
     # Get the "view" (=list of columns to show)
     set view_id [db_string get_view_id "select view_id from im_views where view_name = :view_name" -default 0]
 
@@ -550,7 +550,7 @@ ad_proc -public im_conf_item_list_component {
 	    if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
 	} else {
 	    set value [ns_set get $form_vars $var]
-	    if {![string equal "" $value]} {
+	    if {$value ne ""} {
  		ns_set put $bind_vars $var $value
  		if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
 	    }
@@ -564,7 +564,7 @@ ad_proc -public im_conf_item_list_component {
     for {set i 0} {$i < $len} {incr i} {
 	set key [ns_set key $bind_vars $i]
 	set value [ns_set value $bind_vars $i]
-	if {![string equal $value ""]} {
+	if {$value ne "" } {
 	    lappend params "$key=[ns_urlencode $value]"
 	}
     }
@@ -573,7 +573,7 @@ ad_proc -public im_conf_item_list_component {
 
     # ---------------------- Format Header ----------------------------------
     # Set up colspan to be the number of headers + 1 for the # column
-    set colspan [expr [llength $column_headers] + 1]
+    set colspan [expr {[llength $column_headers] + 1}]
 
     # Format the header names with links that modify the
     # sort order of the SQL query.
@@ -713,13 +713,13 @@ ad_proc -public im_conf_item_list_component {
     }
 
     set extra_select [join $extra_selects ",\n\t"]
-    if { ![empty_string_p $extra_select] } { set extra_select ",\n\t$extra_select" }
+    if { $extra_select ne "" } { set extra_select ",\n\t$extra_select" }
 
     set extra_from [join $extra_froms ",\n\t"]
-    if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
+    if { $extra_from ne "" } { set extra_from ",\n\t$extra_from" }
 
     set extra_where [join $extra_wheres "and\n\t"]
-    if { ![empty_string_p $extra_where] } { set extra_where "and \n\t$extra_where" }
+    if { $extra_where ne "" } { set extra_where "and \n\t$extra_where" }
 
 
     # ---------------------- Get the SQL Query -------------------------
@@ -836,7 +836,7 @@ ad_proc -public im_conf_item_list_component {
 
 	# We've got a conf_item.
 	# Write out a line with conf_item information
-	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	append table_body_html "<tr$bgcolor([expr {$ctr % 2}])>\n"
 
 	foreach column_var $column_vars {
 	    append table_body_html "\t<td valign=top>"
@@ -863,7 +863,7 @@ ad_proc -public im_conf_item_list_component {
 
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
-    if { [empty_string_p $table_body_html] } {
+    if { $table_body_html eq "" } {
 
 	set table_body_html "
 		<tr class=table_list_page_plain>
@@ -894,12 +894,12 @@ ad_proc -public im_conf_item_list_component {
     set total_in_limited 0
 
     # Deal with pagination
-    if {$ctr == $max_entries_per_page && $end_idx < [expr $total_in_limited - 1]} {
+    if {$ctr == $max_entries_per_page && $end_idx < [expr {$total_in_limited - 1}]} {
 	# This means that there are rows that we decided not to return
 	# Include a link to go to the next page
-	set next_start_idx [expr $end_idx + 1]
+	set next_start_idx [expr {$end_idx + 1}]
 	set conf_item_max_entries_per_page $max_entries_per_page
-	set next_page_url  "$current_page_url?[export_vars -url {conf_item_id conf_item_object_id conf_item_max_entries_per_page order_by}]&conf_item_start_idx=$next_start_idx&$pass_through_vars_html"
+	set next_page_url  "[export_vars -base $current_page_url {conf_item_id conf_item_object_id conf_item_max_entries_per_page order_by}]&conf_item_start_idx=$next_start_idx&$pass_through_vars_html"
 	set next_page_html "($remaining_items more) <A href=\"$next_page_url\">&gt;&gt;</a>"
     } else {
 	set next_page_html ""
@@ -908,9 +908,9 @@ ad_proc -public im_conf_item_list_component {
     if { $start_idx > 0 } {
 	# This means we didn't start with the first row - there is
 	# at least 1 previous row. add a previous page link
-	set previous_start_idx [expr $start_idx - $max_entries_per_page]
+	set previous_start_idx [expr {$start_idx - $max_entries_per_page}]
 	if { $previous_start_idx < 0 } { set previous_start_idx 0 }
-	set previous_page_html "<A href=$current_page_url?[export_vars -url {conf_item_id}]&$pass_through_vars_html&order_by=$order_by&conf_item_start_idx=$previous_start_idx>&lt;&lt;</a>"
+	set previous_page_html "<A href=[export_vars -base $current_page_url {conf_item_id}]&$pass_through_vars_html&order_by=$order_by&conf_item_start_idx=$previous_start_idx>&lt;&lt;</a>"
     } else {
 	set previous_page_html ""
     }
@@ -923,7 +923,7 @@ ad_proc -public im_conf_item_list_component {
 	<table width='100%'>
 	<tr>
 	<td align=left>
-		<a href=\"/intranet-confdb/new?[export_vars -url {return_url}]\"
+		<a href=\"/intranet-confdb/[export_vars -base new {return_url}]\"
 		>[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
 	</td>
 	<td align=right>
