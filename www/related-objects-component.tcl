@@ -114,7 +114,6 @@ set ticket_sql "
 	where	p.project_id = t.ticket_id and
 		t.ticket_status_id in (select * from im_sub_categories([im_ticket_status_open])) and
 		(	t.ticket_service_id = :conf_item_id
-		OR	t.ticket_hardware_id = :conf_item_id
 		OR	t.ticket_conf_item_id = :conf_item_id
 		)
 "
