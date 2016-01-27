@@ -38,7 +38,7 @@
 		    </td>
 		    <td width="50%">
 
-			<if @sub_item_count@>
+			<if @sub_item_count@ gt 0>
 			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Sub_Items "Sub-Items"]] %>
 			<listtemplate name="sub_conf_items"></listtemplate>
 			<%= [im_box_footer] %>
