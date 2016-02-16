@@ -16,7 +16,7 @@ ad_page_contract {
 } {
     conf_item_id:integer,optional
     { return_url "/intranet-confdb/index"}
-    { form_mode "display" }
+    { form_mode "edit" }
     { view_name "" }
     conf_item_type_id:integer,optional
     { conf_item_project_id "" }
