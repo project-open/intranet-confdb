@@ -571,6 +571,17 @@ SELECT im_category_hierarchy_new('Generic-Router', 'Hardware', 'Intranet Conf It
 SELECT im_category_new(23005, 'HTTP-Server', 'Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('HTTP-Server', 'Process', 'Intranet Conf Item Type');
 
+SELECT im_category_new(23007, 'Windows-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Windows-Server', 'Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Windows-Server', 'Hardware', 'Intranet Conf Item Type');
+
+SELECT im_category_new(23009, 'VMware-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('VMware-Server', 'Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('VMware-Server', 'Hardware', 'Intranet Conf Item Type');
+
+
+
+
 
 
 create or replace view im_conf_item_type as
