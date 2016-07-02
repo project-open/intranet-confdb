@@ -380,8 +380,17 @@ EXECUTE PROCEDURE im_conf_items_tsearch();
 
 -- 11700-11799	Intranet Conf Item Status
 -- 11800-11999	Intranet Conf Item Type
+	-- 11800-11849	Top-Level "Ontology" of CIs
+	-- 11850-11899	OCS Classification
+	-- 11900-11979	Hardware Components
+	-- 11980-11999 Host stuff
 -- 12000-12999  Intranet ConfDB
-
+	-- 12000-12099	Software
+	-- 12100-12199	Network Hardware
+	-- 12200-12299	IPs & Network
+	-- 12300-12399	Processes
+	-- 12400-12499	Services
+	-- 12500-12599	Location
 
 -- ---------------------------------------------------------
 -- Conf Item Status
@@ -413,6 +422,7 @@ SELECT im_category_new(11804, 'Process', 'Intranet Conf Item Type');
 SELECT im_category_new(11806, 'License', 'Intranet Conf Item Type');
 SELECT im_category_new(11808, 'Specs', 'Intranet Conf Item Type');
 SELECT im_category_new(11810, 'Service', 'Intranet Conf Item Type');
+SELECT im_category_new(11812, 'Location', 'Intranet Conf Item Type');
 update im_categories set enabled_p = 'f' where category_id in (11804, 11808);
 -- reserved to 11849
 
@@ -531,6 +541,35 @@ SELECT im_category_new(12400, 'CVS Repository', 'Intranet Conf Item Type');
 SELECT im_category_hierarchy_new('CVS Repository','Service','Intranet Conf Item Type');
 -- reserved to 12499
 
+
+-- Location
+-- reserved to 12599
+
+
+
+
+
+
+
+
+-----------------------------------------------------------
+-- Nagios Categories
+--
+
+-- 23000-23999  Intranet Conf Item Type (1000 for intranet-nagios)
+
+SELECT im_category_new(23001, 'Linux-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Linux-Server', 'Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Linux-Server', 'Hardware', 'Intranet Conf Item Type');
+
+
+SELECT im_category_new(23003, 'Generic-Router', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Generic-Router', 'Network Router', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('Generic-Router', 'Hardware', 'Intranet Conf Item Type');
+
+
+SELECT im_category_new(23005, 'HTTP-Server', 'Intranet Conf Item Type');
+SELECT im_category_hierarchy_new('HTTP-Server', 'Process', 'Intranet Conf Item Type');
 
 
 
@@ -1051,4 +1090,11 @@ SELECT im_dynfield_attribute_new ('im_conf_item', 'ocs_id', 'OCS ID', 'textbox_m
 SELECT im_dynfield_attribute_new ('im_conf_item', 'ocs_deviceid', 'OCS Device ID', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'ocs_username', 'OCS Username', 'textbox_medium', 'string', 'f');
 SELECT im_dynfield_attribute_new ('im_conf_item', 'ocs_last_update', 'OCS Last Update', 'textbox_medium', 'string', 'f');
+
+
+
+
+SELECT acs_log__debug('/packages/intranet-confdb/sql/postgresql/upgrade/upgrade-5.0.1.0.0-5.0.1.0.1.sql','');
+CREATE SEQUENCE im_conf_item_code_seq START 10001;
+
 
