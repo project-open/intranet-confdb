@@ -8,9 +8,9 @@
   <msg key="Apply">Anwenden</msg>
   <msg key="Archived">Archiviert</msg>
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
-  <msg key="Assoc_Tickets">Assoziierte Tickets</msg>
+  <msg key="Assoc_Tickets">Assoziierte Anfragen</msg>
   <msg key="Assoc_with_a_new_project">Mit neuem Projekt assoziieren</msg>
-  <msg key="Associated_Tickets">Assoziierte Tickets</msg>
+  <msg key="Associated_Tickets">Assoziierte Anfragen</msg>
   <msg key="Computer_Bios">Computer BIOS</msg>
   <msg key="Computer_Controller">Controller</msg>
   <msg key="Computer_Drive">Laufwerke</msg>
@@ -101,7 +101,7 @@
   <msg key="Sub_Items">Subelemente</msg>
   <msg key="Subnet">Subnet</msg>
   <msg key="There_are_no_active_conf_items">Keine aktiven Konfigurationselemente gefunden</msg>
-  <msg key="Ticket_Name">Ticket Name</msg>
+  <msg key="Ticket_Name">Name</msg>
   <msg key="Top_Items">Top Element</msg>
   <msg key="Type">Typ</msg>
   <msg key="Unassociate">Assoziation auflösen</msg>

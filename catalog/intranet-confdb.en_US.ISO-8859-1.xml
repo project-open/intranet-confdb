@@ -40,7 +40,7 @@
   <msg key="Filter_Items">Filter Items</msg>
   <msg key="Generic-Router">Generic Router</msg>
   <msg key="Hardware">Hardware</msg>
-  <msg key="Hardware_Component">Hardware Component</msg>
+  <msg key="Hardware_Component">Hardware Portlet</msg>
   <msg key="Host">Host</msg>
   <msg key="Host_Program">Host Program</msg>
   <msg key="Host_Screen">Host Screen</msg>
