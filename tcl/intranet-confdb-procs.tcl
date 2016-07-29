@@ -1171,3 +1171,54 @@ ad_proc -public im_conf_item_related_objects_component {
     return [string trim $result]
 }
 
+
+
+
+# ---------------------------------------------------------------
+# Admin links shown from main menu
+# ---------------------------------------------------------------
+
+
+ad_proc -public im_menu_conf_items_admin_links {
+
+} {
+    Return a list of admin links to be added to the "Conf Items" menu
+} {
+    set result_list {}
+    set current_user_id [ad_conn user_id]
+    set return_url [im_url_with_query]
+
+    if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
+        lappend result_list [list [lang::message::lookup "" intranet-helpdesk.Admin_Conf_Items "Admin Conf Items"] "/intranet-confdb/admin"]
+    }
+
+    if {[im_permission $current_user_id "add_conf_items"]} {
+#        lappend result_list [list [lang::message::lookup "" intranet-helpdesk.Add_a_new_Conf_Item "New Conf Item"] "[export_vars -base "/intranet-confdb//new" {return_url}]"]
+
+	set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
+	if {$wf_oid_col_exists_p} {
+        set wf_sql "
+                select  t.pretty_name as wf_name,
+                        w.*
+                from    wf_workflows w,
+                        acs_object_types t
+                where   w.workflow_key = t.object_type
+                        and w.object_type = 'im_conf_item'
+        "
+	    db_foreach wfs $wf_sql {
+		set new_from_wf_url [export_vars -base "/intranet-confdb/new" {workflow_key}]
+		lappend result_list [list [lang::message::lookup "" intranet-helpdesk.New_workflow "New %wf_name%"] "$new_from_wf_url"]
+	    }
+	}
+    }
+
+    # Append user-defined menus
+    set bind_vars [list return_url $return_url]
+    set links [im_menu_ul_list -no_uls 1 -list_of_links 1 "conf_items_admin" $bind_vars]
+    foreach link $links {
+        lappend result_list $link
+    }
+
+    return $result_list
+}
+
