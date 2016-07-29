@@ -1134,7 +1134,7 @@ ad_proc -public im_navbar_tree_confdb { } {
 	db_foreach conf_item_types $conf_item_type_sql {
 	    set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
 	    regsub -all " " $conf_item_type "_" conf_item_type_subst
-	    set name [lang::message::lookup "" intranet-helpdesk.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
+	    set name [lang::message::lookup "" intranet-confdb.Conf_Item_type_$conf_item_type_subst "$conf_item_type"]
 	    append html "<li><a href=\"$url\">$name</a></li>\n"
 	}
     }
@@ -1189,11 +1189,11 @@ ad_proc -public im_menu_conf_items_admin_links {
     set return_url [im_url_with_query]
 
     if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
-        lappend result_list [list [lang::message::lookup "" intranet-helpdesk.Admin_Conf_Items "Admin Conf Items"] "/intranet-confdb/admin"]
+        lappend result_list [list [lang::message::lookup "" intranet-confdb.Admin_Conf_Items "Admin Conf Items"] "/intranet-confdb/admin"]
     }
 
     if {[im_permission $current_user_id "add_conf_items"]} {
-#        lappend result_list [list [lang::message::lookup "" intranet-helpdesk.Add_a_new_Conf_Item "New Conf Item"] "[export_vars -base "/intranet-confdb//new" {return_url}]"]
+#        lappend result_list [list [lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "New Conf Item"] "[export_vars -base "/intranet-confdb//new" {return_url}]"]
 
 	set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
 	if {$wf_oid_col_exists_p} {
@@ -1207,7 +1207,7 @@ ad_proc -public im_menu_conf_items_admin_links {
         "
 	    db_foreach wfs $wf_sql {
 		set new_from_wf_url [export_vars -base "/intranet-confdb/new" {workflow_key}]
-		lappend result_list [list [lang::message::lookup "" intranet-helpdesk.New_workflow "New %wf_name%"] "$new_from_wf_url"]
+		lappend result_list [list [lang::message::lookup "" intranet-confdb.New_workflow "New %wf_name%"] "$new_from_wf_url"]
 	    }
 	}
     }
