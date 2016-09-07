@@ -206,7 +206,8 @@ set conf_item_sql [im_conf_item_select_sql \
 ]
 
 set sql "
-	select	i.*,
+	select DISTINCT on (i.tree_sortkey,conf_item_id)
+		i.*,
 		tree_level(i.tree_sortkey)-1 as indent_level,
 		p.project_id,
 		project_name
