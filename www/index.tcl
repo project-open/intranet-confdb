@@ -40,7 +40,20 @@ set date_format "YYYY-MM-DD"
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set delete_conf_item_p $user_admin_p
 
+
 set admin_links [im_menu_ul_list -no_uls 1 "conf_items" {}]
+
+set object_type_admin_links [im_menu_conf_items_admin_links]
+foreach link_entry $object_type_admin_links {
+    set html ""
+    for {set i 0} {$i < [llength $link_entry]} {incr i 2} {
+        set name [lindex $link_entry $i]
+        set url [lindex $link_entry $i+1]
+        append html "<a href='$url'>$name</a>"
+    }
+    append admin_links "<li>$html</li>\n"
+}
+
 if {"" != $admin_links} {
     set admin_links "<ul>\n$admin_links\n</ul>\n"
 }
