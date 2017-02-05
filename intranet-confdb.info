@@ -17,6 +17,7 @@
         <provides url="intranet-confdb" version="3.4.0.2.0"/>
 	<requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-cost" version="3.4.0.0.0"/>
+	<requires url="intranet-search-pg" version="3.4.0.0.0"/>
 
         <callbacks>
         </callbacks>
