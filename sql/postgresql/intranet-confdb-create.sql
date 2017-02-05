@@ -1002,6 +1002,29 @@ SELECT acs_permission__grant_permission(
         'read'
 );
 
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Conf Item Filestorage',		-- plugin_name
+	'intranet-filestorage',			-- package_name
+	'bottom',				-- location
+	'/intranet-confdb/new',			-- page_url
+	null,					-- view_name
+	10,					-- sort_order
+	'im_filestorage_conf_item_component $current_user_id $conf_item_id "" $return_url' -- component_tcl
+);
+
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Conf Item Filestorage' and package_name = 'intranet-confdb'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
 
 
 
