@@ -326,9 +326,7 @@ end;$$ language 'plpgsql';
 -- Full-Text Search for Conf Items
 -----------------------------------------------------------
 
-
 insert into im_search_object_types values (9, 'im_conf_item', 0.8);
-
 
 create or replace function im_conf_items_tsearch ()
 returns trigger as $$
@@ -366,13 +364,8 @@ end;$$ language 'plpgsql';
 
 
 CREATE TRIGGER im_conf_items_tsearch_tr
-AFTER INSERT or UPDATE
-ON im_conf_items
-FOR EACH ROW
-EXECUTE PROCEDURE im_conf_items_tsearch();
-
-
-
+AFTER INSERT or UPDATE ON im_conf_items
+FOR EACH ROW EXECUTE PROCEDURE im_conf_items_tsearch();
 
 -- ------------------------------------------------------------
 -- Categories
@@ -1131,4 +1124,24 @@ SELECT im_dynfield_attribute_new ('im_conf_item', 'ocs_last_update', 'OCS Last U
 SELECT acs_log__debug('/packages/intranet-confdb/sql/postgresql/upgrade/upgrade-5.0.1.0.0-5.0.1.0.1.sql','');
 CREATE SEQUENCE im_conf_item_code_seq START 10001;
 
+
+
+
+
+-- Association Component
+SELECT  im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Associated Objects',			-- plugin_name
+	'intranet-core',			-- package_name
+	'right',				-- location
+	'/intranet-confdb/new',			-- page_url
+	null,					-- view_name
+	120,					-- sort_order
+	'im_object_assoc_component -object_id $conf_item_id'	-- component_tcl
+);
 
