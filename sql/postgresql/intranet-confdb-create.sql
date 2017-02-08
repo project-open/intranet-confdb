@@ -842,6 +842,60 @@ SELECT im_component_plugin__new (
 -- for various groups who whould be able to see the menu.
 
 
+
+
+
+
+
+SELECT im_menu__new (
+		null, 'im_menu', now(), null, null, null,
+		'intranet-confdb',		-- package_name
+		'conf_items_list',		-- label
+		'Conf Items List',		-- name
+		'/intranet-confdb/index',
+		10,				-- sort_order
+		(select menu_id from im_menus where label = 'conf_items'),		-- parent_menu_id
+		null
+);
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'conf_items_list'),
+	(select group_id from groups where group_name = 'Employees'), 
+	'read'
+);
+
+
+
+SELECT im_menu__new (
+		null, 'im_menu', now(), null, null, null,
+		'intranet-confdb',		-- package_name
+		'conf_items_dashboard',		-- label
+		'Conf Items Dashboard',		-- name
+		'/intranet-confdb/dashboard',
+		20,				-- sort_order
+		(select menu_id from im_menus where label = 'conf_items'),		-- parent_menu_id
+		null
+);
+SELECT acs_permission__grant_permission(
+	(select menu_id from im_menus where label = 'conf_items_dashboard'),
+	(select group_id from groups where group_name = 'Employees'), 
+	'read'
+);
+
+
+
+SELECT im_menu__new (
+		null, 'im_menu', now(), null, null, null,
+		'intranet-core',		-- package_name
+		'conf_items_admin',		-- label
+		'Conf Items Admin',		-- name
+		'/intranet/admin/object-type-admin?object_type=im_conf_item',
+		900,				-- sort_order
+		(select menu_id from im_menus where label = 'object_type_admin'),		-- parent_menu_id
+		null
+);
+
+
+
 create or replace function inline_0 ()
 returns integer as $$
 declare
@@ -943,6 +997,20 @@ BEGIN
 end;$$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
+
+
+
+
+-- Conf Items
+update im_menus set sort_order = 300					where label = 'conf_items';
+update im_menus set parent_menu_id = (select menu_id from im_menus where label = 'master_data') where label = 'conf_items';
+update im_menus set sort_order = 10, name = 'New Conf Item'		where label = 'conf_item_add';
+update im_menus set sort_order = 100					where label = 'conf_items_list';
+update im_menus set sort_order = 110					where label = 'conf_items_dashboard';
+update im_menus set sort_order = 300					where label = 'conf_item_csv_export';
+update im_menus set sort_order = 310					where label = 'conf_item_csv_import';
+
+
 
 
 
