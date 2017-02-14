@@ -4,6 +4,7 @@
   <msg key="2nd_Level_Items">2nd Level Items</msg>
   <msg key="Active">Active</msg>
   <msg key="Add_a_new_Conf_Item">Add New Configuration Item</msg>
+  <msg key="Admin_Conf_Items">Admin Conf Items</msg>
   <msg key="All_Items">All Items</msg>
   <msg key="Archived">Archived</msg>
   <msg key="Assoc_Projects">Associated Projects</msg>
@@ -27,7 +28,9 @@
   <msg key="Conf_Item_Status">Status</msg>
   <msg key="Conf_Item_Type">Type</msg>
   <msg key="Conf_Item_Types">Conf Item Types</msg>
+  <msg key="Conf_Items_Dashboard">Conf Items Dashboard</msg>
   <msg key="Conf_Items_Items">Configuration Items</msg>
+  <msg key="Conf_Items_List">Conf Items List</msg>
   <msg key="Conf_Management">Config Mgmt</msg>
   <msg key="Configuration_Database">Configuration Database</msg>
   <msg key="Configuration_Items">Configuration Items</msg>
