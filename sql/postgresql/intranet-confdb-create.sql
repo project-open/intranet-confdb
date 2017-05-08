@@ -831,6 +831,23 @@ SELECT im_component_plugin__new (
 );
 
 
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Task Configuration Items',	-- plugin_name
+	'intranet-confdb',		-- package_name
+	'right',			-- location
+	'/intranet-timesheet2-tasks/new',	-- page_url
+	null,				-- view_name
+	190,				-- sort_order
+	'im_conf_item_list_component -object_id $project_id'	-- component_tcl
+);
+
+
 
 
 
