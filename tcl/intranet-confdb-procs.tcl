@@ -348,6 +348,7 @@ ad_proc -public im_conf_item_update_sql {
 # ----------------------------------------------------------------------
 # Delete a conf item
 # ---------------------------------------------------------------------
+
 ad_proc -public im_conf_item_delete {
     -conf_item_id:required
 } {
@@ -449,20 +450,18 @@ ad_proc -public im_conf_item_list_component {
     {-restrict_to_member_id 0} 
     {-restrict_to_type_id 0} 
     {-restrict_to_status_id 0} 
-    {-max_entries_per_page 50} 
+    {-max_entries_per_page 5000}
     {-export_var_list {} }
     {-return_url "" }
 } {
     Creates a HTML table showing a list of configuration items associated with
-    a project, a user or a ticket.
+    a project, a task, a user or a ticket.
 } {
     # ---------------------- Security - Show the comp? -------------------------------
-    set user_id [ad_conn user_id]
-    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    set current_user_id [auth::require_login]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 
     if {"" == $member_id || 0 == $member_id} { set member_id $restrict_to_member_id }
-    set include_subconf_items 0
-
     if {"" == $order_by} {
 	set order_by [parameter::get_from_package_key -package_key intranet-confdb -parameter ConfItemComponentDefaultSortOrder -default "tree_sortkey"] 
     }
@@ -615,39 +614,16 @@ ad_proc -public im_conf_item_list_component {
     set criteria [list]
 
     if {[string is integer $restrict_to_status_id] && $restrict_to_status_id > 0} {
-	lappend criteria "ci.conf_item_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])"
+	lappend criteria "sub_ci.conf_item_status_id in ([join [im_sub_categories $restrict_to_status_id] ","])"
     }
 
     if {[string is integer $restrict_to_type_id] && $restrict_to_type_id > 0} {
-	lappend criteria "ci.conf_item_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
-    }
-
-    # Associated Object
-    if {[string is integer $object_id] && $object_id > 0} {
-	lappend criteria "ci.conf_item_id in (
-		-- Generic relationship between object and conf item
-		select	r.object_id_two
-		from	acs_rels r,
-			im_conf_item_project_rels cipr
-		where	r.rel_id = cipr.rel_id and
-			r.object_id_one = :object_id
-	UNION
-		-- object is the owner of the conf item
-		select	cf.conf_item_id
-		from	im_conf_items cf
-		where	cf.conf_item_owner_id = :object_id
-	UNION
-		-- object is the user who created the conf item
-		select	object_id
-		from	acs_objects
-		where	object_type = 'im_conf_item' and
-			creation_user = :object_id
-	)"
+	lappend criteria "sub_ci.conf_item_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
     }
 
     # Owner is stictly the owner_id of the conf_item
     if {[string is integer $owner_id] && $owner_id > 0} {
-	lappend criteria "ci.conf_item_owner_id = :owner_id"
+	lappend criteria "sub_ci.conf_item_owner_id = :owner_id"
     }
 
     # Member is anybody associated with the conf item + the owner.
@@ -685,24 +661,24 @@ ad_proc -public im_conf_item_list_component {
 	}
 
 	# Restrict to this list of direct members and their parents
-	lappend criteria "ci.conf_item_id in ([join $result_list ","])"
+	lappend criteria "sub_ci.conf_item_id in ([join $result_list ","])"
     }
 
-    if {![im_permission $user_id "view_conf_items_all"]} {
-	lappend criteria "ci.conf_item_id in (
+    if {![im_permission $current_user_id "view_conf_items_all"]} {
+	lappend criteria "sub_ci.conf_item_id in (
 			select	ci.conf_item_id
 			from	im_conf_items ci,
 				acs_rels r
 			where	r.object_id_one = ci.conf_item_id and 
-				r.object_id_two = :user_id
+				r.object_id_two = :current_user_id
 			)
 	"
-	lappend criteria "parent.conf_item_id in (
+	lappend criteria "main_ci.conf_item_id in (
 			select	ci.conf_item_id
 			from	im_conf_items ci,
 				acs_rels r
 			where	r.object_id_one = ci.conf_item_id and 
-				r.object_id_two = :user_id
+				r.object_id_two = :current_user_id
 			)
 	"
     }
@@ -725,28 +701,37 @@ ad_proc -public im_conf_item_list_component {
     # ---------------------- Get the SQL Query -------------------------
     set sql "
 	select
-		ci.*,
-		tree_level(ci.tree_sortkey) - tree_level(parent.tree_sortkey) as conf_item_level,
-		im_category_from_id(ci.conf_item_status_id) as conf_item_status,
-		im_category_from_id(ci.conf_item_type_id) as conf_item_type
+		sub_ci.*,
+		tree_level(sub_ci.tree_sortkey) - tree_level(main_ci.tree_sortkey) as conf_item_level,
+		im_category_from_id(sub_ci.conf_item_status_id) as conf_item_status,
+		im_category_from_id(sub_ci.conf_item_type_id) as conf_item_type
 		$extra_select
 	from
-		im_conf_items parent,
-		im_conf_items ci
+		acs_rels r, 
+	        im_conf_items main_ci,
+		im_conf_items sub_ci,
+		im_projects main_p, 
+		im_projects sub_p 
 		$extra_from
 	where
-		parent.conf_item_parent_id is null and
-		ci.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey) and
-		ci.conf_item_status_id not in ([im_conf_item_status_deleted])
+		main_p.project_id = $object_id and
+		main_p.project_id = 48410 and
+		sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+		sub_p.project_id = r.object_id_one and
+		r.object_id_two = main_ci.conf_item_id and 
+		sub_ci.tree_sortkey between main_ci.tree_sortkey and tree_right(main_ci.tree_sortkey)
 		$restriction_clause
 		$extra_where
     "
+
     # fraber 150113: Sorting breaks the query!!!
     # Maybe the table needs an index on tree_sortkey?
     set ttt {
 	order by ci.tree_sortkey
     }
 
+#    ad_return_complaint 1 "<pre>[im_ad_hoc_query $sql]\n\n\n$sql</pre>"
+    
     db_multirow conf_item_list_multirow conf_item_list_sql $sql {
 
 	# Perform the following steps in addition to calculating the multirow:
@@ -771,7 +756,7 @@ ad_proc -public im_conf_item_list_component {
 			select	ohs.object_id
 			from	im_biz_object_tree_status ohs
 			where	ohs.open_p = 'c' and
-				ohs.user_id = :user_id and
+				ohs.user_id = :current_user_id and
 				ohs.page_url = 'default' and
 				ohs.object_id in (
 					select	conf_item_id
@@ -820,10 +805,10 @@ ad_proc -public im_conf_item_list_component {
 
 	if {[info exists closed_conf_items_hash($conf_item_id)]} {
 	    # Closed conf_item
-	    set gif_html "<a href='[export_vars -base $open_close_url {user_id {page_url "default"} {object_id $conf_item_id} {open_p "o"} return_url}]'>[im_gif "plus_9"]</a>"
+	    set gif_html "<a href='[export_vars -base $open_close_url {{user_id $current_user_id} {page_url "default"} {object_id $conf_item_id} {open_p "o"} return_url}]'>[im_gif "plus_9"]</a>"
 	} else {
 	    # So this is an open conf_item - show a "(-)", unless the conf_item is a leaf.
-	    set gif_html "<a href='[export_vars -base $open_close_url {user_id {page_url "default"} {object_id $conf_item_id} {open_p "c"} return_url}]'>[im_gif "minus_9"]</a>"
+	    set gif_html "<a href='[export_vars -base $open_close_url {{user_id $current_user_id} {page_url "default"} {object_id $conf_item_id} {open_p "c"} return_url}]'>[im_gif "minus_9"]</a>"
 	    if {[info exists leafs_hash($conf_item_id)]} { set gif_html "&nbsp;" }
 	}
 
@@ -1000,7 +985,7 @@ ad_proc -public im_conf_item_options {
     Returns a list of all Conf Items.
 } {
     set var_list [list type_id $type_id status_id $status_id project_id $project_id owner_id $owner_id cost_center_id $cost_center_id]
-    set options_sql [im_conf_item_select_sql -var_list $var_list]
+    set options_sql [im_conf_item_select_sql -treelevel 2 -var_list $var_list]
 
     set options [list]
     if {$include_empty_p} { lappend options [list $include_empty_name ""] }
