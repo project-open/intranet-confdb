@@ -5,7 +5,6 @@
   <msg key="Active">Aktiv</msg>
   <msg key="Add_a_new_Conf_Item">Neues Konf Element</msg>
   <msg key="All_Items">Alle Elemente</msg>
-  <msg key="Apply">Anwenden</msg>
   <msg key="Archived">Archiviert</msg>
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
   <msg key="Assoc_Tickets">Assoziierte Anfragen</msg>
@@ -73,7 +72,6 @@
   <msg key="New_Conf_Item">Neues Konfig Element</msg>
   <msg key="No_Conf_Items_Found">Keine Elemente gefunden</msg>
   <msg key="Object_Name">Name</msg>
-  <msg key="Object_Type">Objekttyp</msg>
   <msg key="OS">OS</msg>
   <msg key="OS_Version">OS Version</msg>
   <msg key="Owner">Besitzer</msg>
@@ -89,7 +87,6 @@
   <msg key="Project_Open_Package">]po[ Package</msg>
   <msg key="Project_Open_Process">]po[ Process</msg>
   <msg key="Related_Objects">Assoziierte Objekte</msg>
-  <msg key="Relationship_Type">Beziehungstyp</msg>
   <msg key="Remove_checked_items">Ausgwählte Elemente löschen</msg>
   <msg key="Room">Raum</msg>
   <msg key="Server">Server</msg>
