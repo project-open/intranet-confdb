@@ -4,6 +4,7 @@
   <msg key="2nd_Level_Items">2nd Level Items</msg>
   <msg key="Active">Aktiv</msg>
   <msg key="Add_a_new_Conf_Item">Neues Konf Element</msg>
+  <msg key="Admin_Conf_Items">Konfig Elemente administrieren</msg>
   <msg key="All_Items">Alle Elemente</msg>
   <msg key="Archived">Archiviert</msg>
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
@@ -36,6 +37,7 @@
   <msg key="Configuration_Database">Konfigurationsdatenbank</msg>
   <msg key="Configuration_Items">Konf Elemente</msg>
   <msg key="Cost_Center">Kostenstelle</msg>
+  <msg key="CVS_Repository">CVS Repository</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Direction">Richtung</msg>
   <msg key="Domain">Domäne</msg>
@@ -56,6 +58,7 @@
   <msg key="Laptop">Laptop</msg>
   <msg key="License">Lizenz</msg>
   <msg key="Linux-Server">Linux-Server</msg>
+  <msg key="Location">Ort</msg>
   <msg key="lt_Computer_Input_Device">Eingabegerät</msg>
   <msg key="lt_Computer_Network_Devi">Netzwerkgerät</msg>
   <msg key="lt_Computer_Printer_Driv">Druckertreiber</msg>

@@ -37,6 +37,7 @@
   <msg key="Configuration_Database">Configuration Database</msg>
   <msg key="Configuration_Items">Configuration Items</msg>
   <msg key="Cost_Center">Cost Center</msg>
+  <msg key="CVS_Repository">CVS Repository</msg>
   <msg key="Delete">Delete</msg>
   <msg key="Direction">Direction</msg>
   <msg key="Domain">Domain</msg>
@@ -57,6 +58,7 @@
   <msg key="Laptop">Laptop</msg>
   <msg key="License">License</msg>
   <msg key="Linux-Server">Linux-Server</msg>
+  <msg key="Location">Location</msg>
   <msg key="lt_Computer_Input_Device">Computer Input Device</msg>
   <msg key="lt_Computer_Network_Devi">Computer Network Device</msg>
   <msg key="lt_Computer_Printer_Driv">Computer Printer Driver</msg>
