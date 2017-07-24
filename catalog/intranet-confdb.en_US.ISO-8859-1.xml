@@ -29,6 +29,7 @@
   <msg key="Conf_Item_Type">Type</msg>
   <msg key="Conf_Item_Types">Conf Item Types</msg>
   <msg key="Conf_Items">Conf Items</msg>
+  <msg key="Conf_Items_as_CSV">Conf Items as CSV</msg>
   <msg key="Conf_Items_Dashboard">Conf Items Dashboard</msg>
   <msg key="Conf_Items_Items">Configuration Items</msg>
   <msg key="Conf_Items_List">Conf Items List</msg>

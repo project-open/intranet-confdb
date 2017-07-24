@@ -7,9 +7,9 @@
   <msg key="All_Items">Alle Elemente</msg>
   <msg key="Archived">Archiviert</msg>
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
-  <msg key="Assoc_Tickets">Assoziierte Anfragen</msg>
+  <msg key="Assoc_Tickets">Assoziierte Tickets</msg>
   <msg key="Assoc_with_a_new_project">Mit neuem Projekt assoziieren</msg>
-  <msg key="Associated_Tickets">Assoziierte Anfragen</msg>
+  <msg key="Associated_Tickets">Assoziierte Tickets</msg>
   <msg key="Computer_Bios">Computer BIOS</msg>
   <msg key="Computer_Controller">Controller</msg>
   <msg key="Computer_Drive">Laufwerke</msg>
@@ -27,7 +27,11 @@
   <msg key="Conf_Item_Status">Status</msg>
   <msg key="Conf_Item_Type">Typ</msg>
   <msg key="Conf_Item_Types">Typen</msg>
+  <msg key="Conf_Items">Conf Items</msg>
+  <msg key="Conf_Items_as_CSV">Conf Items as CSV</msg>
+  <msg key="Conf_Items_Dashboard">Conf Items Dashboard</msg>
   <msg key="Conf_Items_Items">Konf Elemente</msg>
+  <msg key="Conf_Items_List">Conf Items Liste</msg>
   <msg key="Conf_Management">Konfigurationsmanagement</msg>
   <msg key="Configuration_Database">Konfigurationsdatenbank</msg>
   <msg key="Configuration_Items">Konf Elemente</msg>
@@ -72,6 +76,7 @@
   <msg key="New_Conf_Item">Neues Konfig Element</msg>
   <msg key="No_Conf_Items_Found">Keine Elemente gefunden</msg>
   <msg key="Object_Name">Name</msg>
+  <msg key="Object_Type">Objekttyp</msg>
   <msg key="OS">OS</msg>
   <msg key="OS_Version">OS Version</msg>
   <msg key="Owner">Besitzer</msg>
@@ -87,6 +92,7 @@
   <msg key="Project_Open_Package">]po[ Package</msg>
   <msg key="Project_Open_Process">]po[ Process</msg>
   <msg key="Related_Objects">Assoziierte Objekte</msg>
+  <msg key="Relationship_Type">Beziehungstyp</msg>
   <msg key="Remove_checked_items">Ausgwählte Elemente löschen</msg>
   <msg key="Room">Raum</msg>
   <msg key="Server">Server</msg>
