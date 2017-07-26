@@ -24,11 +24,6 @@ ad_page_contract {
 }
 
 set current_user_id [auth::require_login]
-if {![im_permission $current_user_id "add_conf_items"]} {
-    ad_return_complaint 1 "You don't have sufficient permissions to create or modify tickets"
-    ad_script_abort
-}
-
 set current_url [im_url_with_query]
 set user_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set table_ocs_hardware_exists_p [im_table_exists "ocs_hardware"]
@@ -57,6 +52,39 @@ if {"" == $return_url} {
 	edit { set return_url "/intranet-confdb/index" }
     }
 }
+
+
+# ---------------------------------------------------------------
+# Permissions
+# ---------------------------------------------------------------
+
+switch $form_mode {
+    "edit" {
+	if {![im_permission $current_user_id "add_conf_items"]} {
+	    ad_return_complaint 1 "You don't have sufficient permissions to create or modify configuration items"
+	    ad_script_abort
+	}
+
+	if {[info exists conf_item_id]} {
+	    im_conf_item::check_permissions -conf_item_id $conf_item_id -operation "write"
+	}
+
+    }
+    "display" {
+	if {![im_permission $current_user_id "view_conf_items"]} {
+	    ad_return_complaint 1 "You don't have sufficient permissions to see any configuration item"
+	    ad_script_abort
+	}
+	
+	im_conf_item::check_permissions -conf_item_id $conf_item_id -operation "read"
+    }
+    default {
+	ad_return_complaint 1 "Unknown form_mode='$form_mode'"
+	ad_script_abort
+    }
+}
+
+
 
 # ---------------------------------------------------------------
 # 

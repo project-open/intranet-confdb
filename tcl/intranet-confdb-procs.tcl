@@ -158,6 +158,86 @@ namespace eval im_conf_item {
     }
 
 
+    ad_proc -public audit {
+	-conf_item_id:required
+	-action:required
+    } {
+        Write the audit trail
+    } {
+	# Write Audit Trail
+	im_audit -object_id $conf_item_id -action $action
+    }
+
+
+    ad_proc -public nuke {
+	-conf_item_id:required
+    } {
+	Permanently deletes the ConfItem from the database.
+	This is only suitable for test purposes. During production operations,
+	please set the ConfItem's status to "deleted".
+    } {
+	return [im_conf_item_nuke -conf_item_id $conf_item_id]
+    }
+
+
+    ad_proc -public check_permissions {
+	{-check_only_p 0}
+	-conf_item_id:required
+        -operation:required
+    } {
+	Check if the user can perform view, read, write or admin the conf_item
+    } {
+	set user_id [ad_conn user_id]
+	set user_name [im_name_from_user_id $user_id]
+	im_conf_item_permissions $user_id $conf_item_id view read write admin
+	if {[lsearch {view read write admin} $operation] < 0} { 
+	    ad_return_complaint 1 "Invalid operation '$operation':<br>Expected view, read, write or admin"
+	    ad_script_abort
+	}
+	set perm [set $operation]
+
+	# Just return the result check_only_p is set
+	if {$check_only_p} { return $perm }
+
+ 	if {!$perm} { 
+	    set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Forbidden_operation_on_conf_item "
+	    <b>Unable to perform operation '%operation%'</b>:<br>You don't have the necessary permissions for conf_item #%conf_item_id%."]
+	    ad_return_complaint 1 $action_forbidden_msg 
+	    ad_script_abort
+	}
+	return $perm
+    }
+
+    ad_proc -public set_status_id {
+	-conf_item_id:required
+        -conf_item_status_id:required
+    } {
+        Set the conf_item to the specified status.
+    } {
+	set user_id [ad_conn user_id]
+	set user_name [im_name_from_user_id $user_id]
+	set operation "set_status_id"
+
+	# Fraber 140202: Permission should be checked using check_permissions above!
+	im_conf_item_permissions $user_id $conf_item_id view read write admin
+	if {!$write} {
+	    set action_forbidden_msg [lang::message::lookup "" intranet-helpdesk.Forbidden_operation_on_conf_item "
+	    <b>Unable to perform operation '%operation%'</b>:<br>You don't have the necessary permissions for conf_item #%conf_item_id%."]
+	    ad_return_complaint 1 $action_forbidden_msg 
+	    ad_script_abort
+	}
+
+	# Set the status
+	audit -conf_item_id $conf_item_id -action "before_update"
+	db_dml update_conf_item_status "
+		update im_conf_items set 
+			conf_item_status_id = :conf_item_status_id
+		where conf_item_id = :conf_item_id
+	"
+	audit -conf_item_id $conf_item_id -action "after_update"
+    }
+
+
 }
 
 
@@ -252,6 +332,17 @@ ad_proc -public im_conf_item_select_sql {
 			acs_rels r
 		where	r.object_id_two = $current_user_id and
 			r.object_id_one = ci.conf_item_id
+	UNION
+		-- User is a member of a group that is explicit member of conf item
+		select	ci.conf_item_id
+		from	im_conf_items ci,
+			acs_rels r
+		where	r.object_id_one = ci.conf_item_id and
+			r.object_id_two in (
+				select	group_id
+				from	group_distinct_member_map
+				where	member_id = $current_user_id
+			)
 	UNION
 		-- User belongs to project that belongs to conf item
 		select	ci.conf_item_id
@@ -415,11 +506,14 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 
     # Admin permissions to global + intranet admins + group administrators
     set user_admin_p [expr {$user_is_admin_p || $user_is_group_admin_p || $user_is_wheel_p}]
-
     if {$user_admin_p} {
 	set read 1
 	set write 1
 	set admin 1
+    }
+
+    if {$user_is_group_member_p} {
+	set read 1
     }
 
     # Tricky: Check if the user is the owner of one of the parent CIs...
@@ -1080,6 +1174,45 @@ ad_proc -public im_conf_item_nuke {
     This is only suitable for test purposes. During production operations,
     please set the ConfItem's status to "deleted".
 } {
+
+    # Relationships
+    ns_log Notice "projects/nuke-2: rels"
+    set rels [db_list rels "
+		select rel_id 
+		from acs_rels 
+		where object_id_one = :conf_item_id 
+			or object_id_two = :conf_item_id
+    "]
+
+    set im_conf_item_project_rels_exists_p [im_table_exists im_conf_item_project_rels]
+    set im_ticket_ticket_rels_exists_p [im_table_exists im_ticket_ticket_rels]
+    foreach rel_id $rels {
+	db_dml del_rels "delete from group_element_index where rel_id = :rel_id"
+	if {[im_column_exists im_biz_object_members skill_profile_rel_id]} {
+	    db_dml del_rels "update im_biz_object_members set skill_profile_rel_id = null where skill_profile_rel_id = :rel_id"
+	}
+	if {[im_table_exists im_gantt_assignment_timephases]} {
+	    db_dml del_rels "delete from im_gantt_assignment_timephases where rel_id = :rel_id"
+	}
+	if {[im_table_exists im_gantt_assignments]} {
+	    db_dml del_rels "delete from im_gantt_assignments where rel_id = :rel_id"
+	}
+	if {[im_table_exists im_agile_task_rels]} {
+	    db_dml del_rels "delete from im_agile_task_rels where rel_id = :rel_id"
+	}
+	db_dml del_rels "delete from im_biz_object_members where rel_id = :rel_id"
+	db_dml del_rels "delete from membership_rels where rel_id = :rel_id"
+	if {$im_conf_item_project_rels_exists_p} { db_dml del_rels "delete from im_conf_item_project_rels where rel_id = :rel_id" }
+	if {$im_ticket_ticket_rels_exists_p} { db_dml del_rels "delete from im_ticket_ticket_rels where rel_id = :rel_id" }
+	if {[im_table_exists im_release_items]} {
+	    db_dml del_rels "delete from im_release_items where rel_id = :rel_id"
+	}
+	db_dml del_rels "delete from acs_rels where rel_id = :rel_id"
+	db_dml del_rels "delete from acs_objects where object_id = :rel_id"
+    }
+
+
+    db_dml nuke_ci_context_id "update acs_objects set context_id = null where context_id = :conf_item_id"
     db_string nuke_ci "select im_conf_item__delete(:conf_item_id)"
 }
 
@@ -1205,5 +1338,59 @@ ad_proc -public im_menu_conf_items_admin_links {
     }
 
     return $result_list
+}
+
+
+
+# ----------------------------------------------------------------------
+# Navigation Bar
+# ---------------------------------------------------------------------
+
+ad_proc -public im_conf_item_navbar { 
+    {-navbar_menu_label "confdb"}
+    default_letter 
+    base_url 
+    next_page_url 
+    prev_page_url 
+    export_var_list 
+    {select_label ""} 
+} {
+    Returns rendered HTML code for a horizontal sub-navigation
+    bar for /intranet-confdb/.
+    The lower part of the navbar also includes an Alpha bar.
+
+    @param default_letter none marks a special behavious, hiding the alpha-bar.
+    @navbar_menu_label Determines the "parent menu" for the menu tabs for 
+		       search shortcuts, defaults to "projects".
+} {
+    # -------- Defaults -----------------------------
+    set user_id [ad_conn user_id]
+    set url_stub [ns_urldecode [im_url_with_query]]
+
+    set sel "<td class=tabsel>"
+    set nosel "<td class=tabnotsel>"
+    set a_white "<a class=whitelink"
+    set tdsp "<td>&nbsp;</td>"
+
+    # -------- Calculate Alpha Bar with Pass-Through params -------
+    set bind_vars [ns_set create]
+    foreach var $export_var_list {
+	upvar 1 $var value
+	if { [info exists value] } {
+	    ns_set put $bind_vars $var $value
+	}
+    }
+    set alpha_bar [im_alpha_bar -prev_page_url $prev_page_url -next_page_url $next_page_url $base_url $default_letter $bind_vars]
+
+    # Get the Subnavbar
+    set parent_menu_sql "select menu_id from im_menus where label = '$navbar_menu_label'"
+    set parent_menu_id [util_memoize [list db_string parent_admin_menu $parent_menu_sql -default 0]]
+    
+    ns_set put $bind_vars letter $default_letter
+    ns_set delkey $bind_vars project_status_id
+
+    set navbar [im_sub_navbar $parent_menu_id $bind_vars $alpha_bar "tabnotsel" $select_label]
+
+    return $navbar
 }
 

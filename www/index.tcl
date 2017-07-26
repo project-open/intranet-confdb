@@ -276,6 +276,10 @@ set conf_item_sql [im_conf_item_select_sql \
 	-treelevel $treelevel \
 ]
 
+
+
+#ad_return_complaint 1 "<pre>$conf_item_sql</pre>"
+
 set sql "
 	select DISTINCT on (i.tree_sortkey,conf_item_id)
 		i.*,
