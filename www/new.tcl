@@ -35,7 +35,6 @@ set table_ocs_hardware_exists_p [im_table_exists "ocs_hardware"]
 set focus ""
 set sub_navbar ""
 
-
 # org_conf_item_id required by Portlet Components!
 set org_conf_item_id [im_opt_val conf_item_id]
 
@@ -274,6 +273,11 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
 	append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
     }
 }
+
+
+# conf_item_id overwritten by query of sub-elements...
+set conf_item_id $org_conf_item_id
+
 
 
 # ---------------------------------------------------------------
