@@ -18,6 +18,8 @@ ad_page_contract {
     { type_id ""}
     { owner_id ""}
     { treelevel "0" }
+    { order_by "" }
+    { view_name "" }
 }
 
 # ---------------------------------------------------------------
@@ -26,12 +28,20 @@ ad_page_contract {
 
 # User id already verified by filters
 set current_user_id [auth::require_login]
+set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+
 set page_focus "im_header_form.keywords"
 set page_title [lang::message::lookup "" intranet-confdb.Configuration_Items "Configuration Items"]
 set context_bar [im_context_bar $page_title]
 set return_url [im_url_with_query]
 
 set date_format "YYYY-MM-DD"
+
+# Unprivileged users can only see their own conf_items
+set view_conf_items_p [im_permission $current_user_id "view_conf_items"]
+set view_conf_items_all_p [im_permission $current_user_id "view_conf_items_all"]
+set add_conf_items_p [im_permission $current_user_id "add_conf_items"]
+
 
 # ---------------------------------------------------------------
 # Admin Links
@@ -85,7 +95,7 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name} \
+    -export { order_by how_many view_name} \
     -form {
 	{treelevel:text(select),optional {label "[lang::message::lookup {} intranet-core.Treelevel {Treelevel}]"} {options $treelevel_options } }
 	{type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-core.Conf_Item_Type {Type}]"} {custom {category_type "Intranet Conf Item Type" translate_p 1 package_key "intranet-confdb"} } }
@@ -110,98 +120,146 @@ ad_form \
     ]
 
 
+
+
 # ---------------------------------------------------------------
-# Conf_Items info
+# Defined Table Fields
 # ---------------------------------------------------------------
 
-# Variables of this page to pass through the conf_items_page
+# Define the column headers and column contents that 
+# we want to show:
+#
+if {"" == $view_name || "standard" == $view_name} { set view_name "im_conf_item_list" }
+set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
+if {!$view_id } {
+    ad_return_complaint 1 "<b>Unknown View Name</b>:<br> The view '$view_name' is not defined.<br> 
+    Maybe you need to upgrade the database. <br> Please notify your system administrator."
+    return
+}
 
-set export_var_list [list]
 
-# define list object
-set list_id "conf_items_list"
+# ---------------------------------------------------------------
+# Format the List Table Header
+# ---------------------------------------------------------------
 
-# Don't show project name, because of duplicates
-#	project_name {
-#	    label "[lang::message::lookup {} intranet-confdb.Project {Project}]"
-#	    link_url_eval {[export_vars -base "/intranet/projects/view" {project_id}]}
-#	}
+set column_headers [list]
+set column_vars [list]
+set extra_selects [list]
+set extra_froms [list]
+set extra_wheres [list]
+set view_order_by_clause ""
+
+set column_sql "
+	select	vc.*
+	from	im_view_columns vc
+	where	view_id = :view_id
+		and group_id is null
+	order by sort_order
+"
+set table_header_html ""
+db_foreach column_list_sql $column_sql {
+    if {"" == $visible_for || [eval $visible_for]} {
+	lappend column_headers "$column_name"
+	lappend column_vars "$column_render_tcl"
+	if {"" != $extra_select} { lappend extra_selects $extra_select }
+	if {"" != $extra_from} { lappend extra_froms $extra_from }
+	if {"" != $extra_where} { lappend extra_wheres $extra_where }
+	if {"" != $order_by_clause && [string tolower $order_by] == [string tolower $column_name]} {
+	    set view_order_by_clause $order_by_clause
+	}
+
+	# Build the column header
+	regsub -all " " $column_name "_" col_txt
+	set col_txt [lang::message::lookup "" "intranet-confdb.Column_$col_txt" $column_name]
+	set col_url [export_vars -base "index" {{order_by $column_name}}]
+
+	# Append the DynField values from the Filter as pass-through variables
+	# so that sorting won't alter the selected tickets
+	set dynfield_sql "
+		select	aa.attribute_name
+		from	im_dynfield_attributes a,
+			acs_attributes aa
+		where	a.acs_attribute_id = aa.attribute_id
+			and aa.object_type = 'im_ticket'
+		UNION select 'mine_p'
+		UNION select 'start_date'
+		UNION select 'end_date'
+	"
+	db_foreach pass_through_vars $dynfield_sql {
+	    set value [im_opt_val $attribute_name]
+	    if {"" != $value} {
+		append col_url "&$attribute_name=$value"
+	    }
+	}
+
+	set admin_link "<a href=[export_vars -base "/intranet/admin/views/new-column" {return_url column_id {form_mode display}}]>[im_gif wrench]</a>"
+	if {!$user_is_admin_p} { set admin_link "" }
+	set checkbox_p [regexp {<input} $column_name match]
+	
+	if { $order_by eq $column_name  || $checkbox_p } {
+	    append table_header_html "<td class=rowtitle>$col_txt$admin_link</td>\n"
+	} else {
+	    append table_header_html "<td class=rowtitle><a href=\"$col_url\">$col_txt</a>$admin_link</td>\n"
+	}
+    }
+}
+set table_header_html "
+	<thead>
+	<tr>
+	$table_header_html
+	</tr>
+	</thead>
+"
+
+
+# Set up colspan to be the number of headers + 1 for the # column
+set colspan [expr {[llength $column_headers] + 1}]
+
+
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
 
 set bulk_actions_list "[list]"
 if {$delete_conf_item_p} {
     lappend bulk_actions_list "[lang::message::lookup "" intranet-confdb.Delete "Delete"]" "conf-item-del" "[lang::message::lookup "" intranet-confdb.Remove_checked_items "Remove Checked Items"]"
 }
 
-template::list::create \
-    -name $list_id \
-    -multirow conf_item_lines \
-    -key conf_item_id \
-    -has_checkboxes \
-    -bulk_actions $bulk_actions_list \
-    -bulk_action_export_vars { return_url} \
-    -row_pretty_plural "[lang::message::lookup "" intranet-confdb.Conf_Items_Items {Conf Items}]" \
-    -elements {
-	conf_item_chk {
-	    label "<input type=\"checkbox\" 
-                          name=\"_dummy\" 
-                          onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
-                          title=\"Check/uncheck all rows\">"
-	    display_template {
-		@conf_item_lines.conf_item_chk;noquote@
-	    }
-	}
-	conf_item_name {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Name Name]"
-	    display_template {
-		@conf_item_lines.indent;noquote@<a href=@conf_item_lines.conf_item_url;noquote@>@conf_item_lines.conf_item_name;noquote@</a>
-	    }
-	}
-        ip_address {
-	    label "[lang::message::lookup {} intranet-confdb.IP_Address IP-Address]"
-	}
-        conf_item_type {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Type Type]"
-	}
-        conf_item_status {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Status Status]"
-	}
-        processor_speed {
-	    label "[lang::message::lookup {} intranet-confdb.Processor Processor]"
-	    display_template {
-		@conf_item_lines.processor;noquote@
-	    }
-	}
-        sys_memory {
-	    label "[lang::message::lookup {} intranet-confdb.Memory Memory]"
-	}
-        os_name {
-	    label "[lang::message::lookup {} intranet-confdb.OS OS]"
-	}
-        os_version {
-	    label "[lang::message::lookup {} intranet-confdb.OS_Version Version]"
-	}
-    }
 
-set ttt {
-        win_workgroup {
-	    label "[lang::message::lookup {} intranet-confdb.Workgroup Workgroup]"
-	}
-        win_userdomain {
-	    label "[lang::message::lookup {} intranet-confdb.Domain Domain]"
-	}
-	conf_item_code {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Code Code]"
-	}
-	conf_item_nr {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Nr {Nr.}]"
-	}
-        conf_item_owner {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Cost_Owner Owner]"
-	    link_url_eval {[export_vars -base "/intranet/users/view" {{user_id $conf_item_owner_id}}]}
-	}
-        conf_item_cost_center {
-	    label "[lang::message::lookup {} intranet-confdb.Conf_Item_Cost_Center {Cost Center}]"
-	}
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
+
+set order_by_clause ""
+switch [string tolower $order_by] {
+    "creation date" { set order_by_clause "order by p.start_date DESC" }
+    "type" { set order_by_clause "order by t.ticket_type_id, p.start_date" }
+    "status" { set order_by_clause "order by t.ticket_status_id, p.start_date" }
+    "customer" { set order_by_clause "order by lower(company_name), p.start_date" }
+    "prio" { set order_by_clause "order by ticket_prio_id, p.start_date" }
+    "nr" { set order_by_clause "order by substring('00000000' || p.project_nr from (length(p.project_nr)) for 9) DESC, p.start_date" }
+    "name" { set order_by_clause "order by lower(p.project_name), p.start_date" }
+    "contact" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_customer_contact_id)), p.start_date" }
+    "assignee" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_assignee_id)), p.start_date" }
+}
+# order_by_clause from view configuration overrides default
+if {"" != $view_order_by_clause} { set order_by_clause $view_order_by_clause }
+if {"" == $order_by_clause} { set order_by_clause "order by i.tree_sortkey" }
+
+
+
+
+
+# ---------------------------------------------------------------
+# Dashboard column
+# ---------------------------------------------------------------
+
+set dashboard_column_html [string trim [im_component_bay "right"]]
+if {"" == $dashboard_column_html} {
+    set dashboard_column_width "0"
+} else {
+    set dashboard_column_width "250"
 }
 
 
@@ -227,29 +285,119 @@ set sql "
 	from	($conf_item_sql) i
 		LEFT OUTER JOIN acs_rels r ON (i.conf_item_id = r.object_id_two)
 		LEFT OUTER JOIN im_projects p ON (p.project_id = r.object_id_one)
-	order by
-		i.tree_sortkey
+	$order_by_clause
 "
 
 
 
-db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} conf_item_lines conf_items_lines $sql {
-    set conf_item_chk "<input type=\"checkbox\" 
-				name=\"conf_item_id\" 
-				value=\"$conf_item_id\" 
-				id=\"conf_items_list,$conf_item_id\">"
+
+
+# ---------------------------------------------------------------
+# Format the Result Data
+# ---------------------------------------------------------------
+
+set bgcolor(0) " class=roweven "
+set bgcolor(1) " class=rowodd "
+set ctr 0
+set idx 0
+set table_body_html ""
+db_foreach conf_db_query $sql {
+
+    # L10n
+    regsub -all {[^0-9a-zA-Z]} $conf_item_type "_" conf_item_type_key
+    set conf_item_type_l10n [lang::message::lookup "" intranet-core.$conf_item_type_key $conf_item_type]
+    regsub -all {[^0-9a-zA-Z]} $conf_item_status "_" conf_item_status_key
+    set conf_item_status_l10n [lang::message::lookup "" intranet-core.$conf_item_status_key $conf_item_status]
+
+    set conf_item_cost_center_name [im_cost_center_name $conf_item_cost_center_id]
+
+    # Bulk Action Checkbox
+    set action_checkbox "<input type=checkbox name=conf_item value=$conf_item_id id=conf_item,$conf_item_id>\n"
+
     set processor "${processor_num}x$processor_speed"
-    set return_url [im_url_with_query]
     set conf_item_url [export_vars -base new {conf_item_id {form_mode "display"}}]
 
     set indent ""
     for {set i 0} {$i < $indent_level} {incr i} {
 	append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
     }
+    set indent_short_html $indent
+
+    # Append together a line of data based on the "column_vars" parameter list
+    set row_html "<tr$bgcolor([expr {$ctr % 2}])>\n"
+    foreach column_var $column_vars {
+	append row_html "<td>"
+	set cmd "append row_html $column_var"
+	eval "$cmd"
+	append row_html "</td>\n"
+    }
+    append row_html "</tr>\n"
+    append table_body_html $row_html
+
+    incr ctr
+    incr idx
 }
 
+# Show a reasonable message when there are no result rows:
+if { $table_body_html eq "" } {
+    set table_body_html "
+	<tr><td colspan=$colspan><ul><li><b>
+	[lang::message::lookup "" intranet-core.lt_There_are_currently_n "There are currently no entries matching the selected criteria"]
+	</b></ul></td></tr>
+    "
+}
+
+set table_continuation_html "
+	<tr>
+	  <td align=center colspan=$colspan>
+	  </td>
+	</tr>
+"
+#	    [im_maybe_insert_link $prev_page $next_page]
+#	    $viewing_msg &nbsp;
 
 
+set conf_db_action_customize_html "<a href=[export_vars -base "/intranet/admin/categories/index" {{select_category_type "Intranet Conf Item Action"}}]>[im_gif -translate_p 1 wrench "Custom Actions"]</a>"
+if {!$user_is_admin_p} { set conf_db_action_customize_html "" }
+
+
+set table_submit_html "
+  <tfoot>
+	<tr valign=top>
+	  <td align=left colspan=[expr {$colspan-1}] valign=top>
+		<table cellspacing=1 cellpadding=1 border=0>
+		<tr valign=top>
+		<td>
+			[im_category_select \
+			     -translate_p 1 \
+			     -package_key "intranet-confdb" \
+			     -plain_p 1 \
+			     -include_empty_p 1 \
+			     -include_empty_name "" \
+			     "Intranet Conf Item Action" \
+			     action_id \
+			]
+		</td>
+		<td>
+			<input type=submit value='[lang::message::lookup "" intranet-confdb.Action "Action"]'>
+			$conf_db_action_customize_html
+		</td>
+		</tr>
+		</table>
+
+	  </td>
+	</tr>
+  </tfoot>
+"
+
+if {!$view_conf_items_all_p} { set table_submit_html "" }
+
+
+
+
+# ---------------------------------------------------------------
+# 
+# ---------------------------------------------------------------
 
 eval [template::adp_compile -string {<formtemplate id="conf_item_filter"></formtemplate>}]
 set filter_html $__adp_output
@@ -270,5 +418,12 @@ set left_navbar_html "
       $admin_links
     </div>
 "
+
+
+set letter ""
+set next_page_url ""
+set prev_page_url ""
+set menu_select_label "confdb_summary"
+set conf_item_navbar_html [im_conf_item_navbar -navbar_menu_label "confdb" $letter "/intranet-confdb/index" $next_page_url $prev_page_url [list start_idx order_by how_many view_name letter conf_db_status_id] $menu_select_label]
 
 
