@@ -675,22 +675,16 @@ ad_proc -public im_conf_item_list_component {
     set admin_link ""
     set table_header_html ""
     foreach col $column_headers {
-	set cmd_eval ""
-	if {$debug} { ns_log Notice "im_conf_item_list_component: eval=$cmd_eval $col" }
-	set cmd "set cmd_eval $col"
-	eval $cmd
-	regsub -all " " $cmd_eval "_" cmd_eval_subs
-	set cmd_eval [lang::message::lookup "" intranet-confdb.$cmd_eval_subs $cmd_eval]
-	if {$user_is_admin_p} { set admin_link [lindex $admin_links $col_ctr] }
-	append table_header_html "  <th class=rowtitle>$cmd_eval$admin_link</th>\n"
+	regsub -all " " $col "_" col_txt
+	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+	if {$user_is_admin_p} { set admin_link [lindex $admin_links $col_ctr] } else { set admin_link "" }
+	append table_header_html "  <td class=\"rowtitle\">$col_txt$admin_link</td>\n"
 	incr col_ctr
     }
 
     set table_header_html "
 	<thead>
-	    <tr class=tableheader>
-		$table_header_html
-	    </tr>
+	    <tr class=tableheader>$table_header_html</tr>
 	</thead>
     "
     
