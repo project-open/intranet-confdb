@@ -806,15 +806,15 @@ insert into im_views (view_id, view_name, visible_for) values (941, 'im_conf_ite
 
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL, 
-'"[im_gif del "Delete"]"', '"<input type=checkbox name=conf_item_id.$conf_item_id>"', '', '', 1, '');
+extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL,
+'[im_gif del "Delete"]"', '"<input type=checkbox name=conf_item_id.$conf_item_id>', '', '', 1, '');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (94105, 941, NULL, '"Name"',
+extra_select, extra_where, sort_order, visible_for) values (94105, 941, NULL, 'Name',
 '"<nobr>$indent_short_html$gif_html<a href=$object_url>$conf_item_name</a></nobr>"','','',5,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (94110, 941, NULL, '"Type"',
+extra_select, extra_where, sort_order, visible_for) values (94110, 941, NULL, 'Type',
 '"<nobr>$conf_item_type</nobr>"','','',10,'');
 
 
