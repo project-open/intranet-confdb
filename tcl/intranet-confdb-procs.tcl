@@ -676,7 +676,11 @@ ad_proc -public im_conf_item_list_component {
     set table_header_html ""
     foreach col $column_headers {
 	regsub -all " " $col "_" col_txt
-	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+	if {[string first "<" $col_txt] < 0 && [string first "\[" $col_txt] < 0} {
+	    set col_txt [lang::message::lookup "" intranet-confdb.$col_txt $col]
+	} else {
+	    set col_txt $col
+	}
 	if {$user_is_admin_p} { set admin_link [lindex $admin_links $col_ctr] } else { set admin_link "" }
 	append table_header_html "  <td class=\"rowtitle\">$col_txt$admin_link</td>\n"
 	incr col_ctr
