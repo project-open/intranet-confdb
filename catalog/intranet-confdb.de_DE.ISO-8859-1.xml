@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-confdb" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="2nd_Level_Items">2nd Level Items</msg>
+  <msg key="Action">Aktion</msg>
   <msg key="Active">Aktiv</msg>
   <msg key="Add_a_new_Conf_Item">Neues Konf Element</msg>
   <msg key="Admin_Conf_Items">Konfig Elemente administrieren</msg>
@@ -11,6 +12,13 @@
   <msg key="Assoc_Tickets">Assoziierte Tickets</msg>
   <msg key="Assoc_with_a_new_project">Mit neuem Projekt assoziieren</msg>
   <msg key="Associated_Tickets">Assoziierte Tickets</msg>
+  <msg key="Column_CC">Kosten-&lt;br&gt;stelle</msg>
+  <msg key="Column_Descr">Beschr</msg>
+  <msg key="Column_IP">IP</msg>
+  <msg key="Column_Name">Name</msg>
+  <msg key="Column_Note">Notiz</msg>
+  <msg key="Column_Status">Status</msg>
+  <msg key="Column_Type">Typ</msg>
   <msg key="Computer_Bios">Computer BIOS</msg>
   <msg key="Computer_Controller">Controller</msg>
   <msg key="Computer_Drive">Laufwerke</msg>
@@ -98,12 +106,14 @@
   <msg key="Relationship_Type">Beziehungstyp</msg>
   <msg key="Remove_checked_items">Ausgwählte Elemente löschen</msg>
   <msg key="Room">Raum</msg>
+  <msg key="Save_Changes">Speichern</msg>
   <msg key="Server">Server</msg>
   <msg key="Service">Service</msg>
   <msg key="Software">Software</msg>
   <msg key="Software_Application">Anwendung</msg>
   <msg key="Software_Component">Software Komponente</msg>
   <msg key="Specs">Spezifikation</msg>
+  <msg key="Status">Status</msg>
   <msg key="Sub_Items">Subelemente</msg>
   <msg key="Subnet">Subnet</msg>
   <msg key="There_are_no_active_conf_items">Keine aktiven Konfigurationselemente gefunden</msg>
