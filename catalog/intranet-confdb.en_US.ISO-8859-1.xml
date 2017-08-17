@@ -2,6 +2,7 @@
 <message_catalog package_key="intranet-confdb" locale="en_US" charset="ISO-8859-1">
 
   <msg key="2nd_Level_Items">2nd Level Items</msg>
+  <msg key="Action">Action</msg>
   <msg key="Active">Active</msg>
   <msg key="Add_a_new_Conf_Item">Add New Configuration Item</msg>
   <msg key="Admin_Conf_Items">Admin Conf Items</msg>
@@ -11,6 +12,13 @@
   <msg key="Assoc_Tickets">Associated Tickets</msg>
   <msg key="Assoc_with_a_new_project">Associate with a new project</msg>
   <msg key="Associated_Tickets">Associated Tickets</msg>
+  <msg key="Column_CC">CC</msg>
+  <msg key="Column_Descr">Descr</msg>
+  <msg key="Column_IP">IP</msg>
+  <msg key="Column_Name">Name</msg>
+  <msg key="Column_Note">Note</msg>
+  <msg key="Column_Status">Status</msg>
+  <msg key="Column_Type">Type</msg>
   <msg key="Computer_Bios">Computer BIOS</msg>
   <msg key="Computer_Controller">Computer Controller</msg>
   <msg key="Computer_Drive">Computer Drive</msg>
@@ -98,12 +106,14 @@
   <msg key="Relationship_Type">Relationship</msg>
   <msg key="Remove_checked_items">Remove Checked Items</msg>
   <msg key="Room">Room</msg>
+  <msg key="Save_Changes">Save Changes</msg>
   <msg key="Server">Server</msg>
   <msg key="Service">Service</msg>
   <msg key="Software">Software</msg>
   <msg key="Software_Application">Software Application</msg>
   <msg key="Software_Component">Software Component</msg>
   <msg key="Specs">Specs</msg>
+  <msg key="Status">Status</msg>
   <msg key="Sub_Items">Sub-Items</msg>
   <msg key="Subnet">Subnet</msg>
   <msg key="There_are_no_active_conf_items">There are no active configuration items for this query</msg>
