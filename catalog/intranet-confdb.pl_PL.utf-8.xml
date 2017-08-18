@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="intranet-confdb" package_version="3.4.0.7.5" locale="pl_PL" charset="utf-8">
+<message_catalog package_key="intranet-confdb" locale="pl_PL" charset="utf-8">
 
   <msg key="2nd_Level_Items">Element 2giego poziomu</msg>
   <msg key="Active">Aktywny</msg>
@@ -25,7 +25,7 @@
   <msg key="Conf_Item_Status">Status</msg>
   <msg key="Conf_Item_Type">Rodzaj</msg>
   <msg key="Conf_Item_Types">Elementy Konf. Rodzaje</msg>
-  <msg key="Conf_Items_Items">Brak elementów do konfigurowania</msg>
+  <msg key="Conf_Items_Items">elementów do konfigurowania</msg>
   <msg key="Conf_Management">Konferencji Mgmt</msg>
   <msg key="Configuration_Items">Konfiguracja Elementów</msg>
   <msg key="Cost_Center">Centrum Kosztów</msg>
@@ -60,7 +60,7 @@
   <msg key="Network_Device">Sieć Urządzenie</msg>
   <msg key="Network_Router">Sieć Router</msg>
   <msg key="Network_Switch">Sieć Switch</msg>
-  <msg key="New_Bug">Nowy Bug</msg>
+  <msg key="New_Bug">Nowy Błąd</msg>
   <msg key="New_Conf_Item">Nowy Element Konf.</msg>
   <msg key="OS">OS</msg>
   <msg key="OS_Version">Wersja OS</msg>
@@ -78,7 +78,9 @@
   <msg key="Software_Component">Komponent Oprogramowania</msg>
   <msg key="Specs">Spec.</msg>
   <msg key="Subnet">Podsieć</msg>
+  <msg key="There_are_no_active_conf_items">Brak aktywnych elementów conf</msg>
   <msg key="Ticket_Name">Nazwa Zlecenia</msg>
+  <msg key="Top_Items">Najlepsze Elementy</msg>
   <msg key="Workgroup">Grupa Robocza</msg>
   <msg key="Workstation">Stacja Robocza</msg>
   <msg key="Zombie">Zombi</msg>
