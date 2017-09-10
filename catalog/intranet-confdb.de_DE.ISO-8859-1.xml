@@ -5,7 +5,7 @@
   <msg key="Action">Aktion</msg>
   <msg key="Active">Aktiv</msg>
   <msg key="Add_a_new_Conf_Item">Neues Konf Element</msg>
-  <msg key="Admin_Conf_Items">Konfig Elemente administrieren</msg>
+  <msg key="Admin_Conf_Items">Konfigurationselemente verwalten</msg>
   <msg key="All_Items">Alle Elemente</msg>
   <msg key="Archived">Archiviert</msg>
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
@@ -38,12 +38,12 @@
   <msg key="Conf_Item_Types">Typen</msg>
   <msg key="Conf_Items">Conf Items</msg>
   <msg key="Conf_Items_as_CSV">Conf Items as CSV</msg>
-  <msg key="Conf_Items_Dashboard">Conf Items Dashboard</msg>
+  <msg key="Conf_Items_Dashboard">Konfigurationselement-Dashboard</msg>
   <msg key="Conf_Items_Items">Konf Elemente</msg>
-  <msg key="Conf_Items_List">Conf Items Liste</msg>
+  <msg key="Conf_Items_List">Konfigurationselement-Liste</msg>
   <msg key="Conf_Management">Konfigurationsmanagement</msg>
   <msg key="Configuration_Database">Konfigurationsdatenbank</msg>
-  <msg key="Configuration_Items">Konf Elemente</msg>
+  <msg key="Configuration_Items">Konfigurationselemente</msg>
   <msg key="Cost_Center">Kostenstelle</msg>
   <msg key="CVS_Repository">CVS Repository</msg>
   <msg key="Delete">Löschen</msg>
@@ -84,7 +84,7 @@
   <msg key="Network_Switch">Switch</msg>
   <msg key="New_Association">Neue Assoziation</msg>
   <msg key="New_Bug">Neuer Fehler</msg>
-  <msg key="New_Conf_Item">Neues Konfig Element</msg>
+  <msg key="New_Conf_Item">Neues Konfigurationselement</msg>
   <msg key="No_Conf_Items_Found">Keine Elemente gefunden</msg>
   <msg key="Object_Name">Name</msg>
   <msg key="Object_Type">Objekttyp</msg>
@@ -104,7 +104,7 @@
   <msg key="Project_Open_Process">]po[ Process</msg>
   <msg key="Related_Objects">Assoziierte Objekte</msg>
   <msg key="Relationship_Type">Beziehungstyp</msg>
-  <msg key="Remove_checked_items">Ausgwählte Elemente löschen</msg>
+  <msg key="Remove_checked_items">Ausgewählte Elemente löschen</msg>
   <msg key="Room">Raum</msg>
   <msg key="Save_Changes">Speichern</msg>
   <msg key="Server">Server</msg>
@@ -118,7 +118,7 @@
   <msg key="Subnet">Subnet</msg>
   <msg key="There_are_no_active_conf_items">Keine aktiven Konfigurationselemente gefunden</msg>
   <msg key="Ticket_Name">Name</msg>
-  <msg key="Top_Items">Top Element</msg>
+  <msg key="Top_Items">Top-Elemente</msg>
   <msg key="Type">Typ</msg>
   <msg key="Unassociate">Assoziation auflösen</msg>
   <msg key="VMware-Server">VMware-Server</msg>
