@@ -233,21 +233,14 @@ if {$delete_conf_item_p} {
 
 set order_by_clause ""
 switch [string tolower $order_by] {
-    "creation date" { set order_by_clause "order by p.start_date DESC" }
-    "type" { set order_by_clause "order by t.ticket_type_id, p.start_date" }
-    "status" { set order_by_clause "order by t.ticket_status_id, p.start_date" }
-    "customer" { set order_by_clause "order by lower(company_name), p.start_date" }
-    "prio" { set order_by_clause "order by ticket_prio_id, p.start_date" }
-    "nr" { set order_by_clause "order by substring('00000000' || p.project_nr from (length(p.project_nr)) for 9) DESC, p.start_date" }
-    "name" { set order_by_clause "order by lower(p.project_name), p.start_date" }
-    "contact" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_customer_contact_id)), p.start_date" }
-    "assignee" { set order_by_clause "order by lower(im_name_from_user_id(t.ticket_assignee_id)), p.start_date" }
+    "type" { set order_by_clause "order by conf_item_type_id" }
+    "status" { set order_by_clause "order by conf_item_staus_id" }
+    "nr" { set order_by_clause "order by lower(conf_item_nr)" }
+    "name" { set order_by_clause "order by lower(conf_item_name)" }
 }
 # order_by_clause from view configuration overrides default
 if {"" != $view_order_by_clause} { set order_by_clause $view_order_by_clause }
 if {"" == $order_by_clause} { set order_by_clause "order by i.tree_sortkey" }
-
-
 
 
 
@@ -281,7 +274,7 @@ set conf_item_sql [im_conf_item_select_sql \
 #ad_return_complaint 1 "<pre>$conf_item_sql</pre>"
 
 set sql "
-	select DISTINCT on (i.tree_sortkey,conf_item_id)
+	select --DISTINCT on (i.tree_sortkey,conf_item_id)
 		i.*,
 		tree_level(i.tree_sortkey)-1 as indent_level,
 		p.project_id,
