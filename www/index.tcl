@@ -234,7 +234,7 @@ if {$delete_conf_item_p} {
 set order_by_clause ""
 switch [string tolower $order_by] {
     "type" { set order_by_clause "order by conf_item_type_id" }
-    "status" { set order_by_clause "order by conf_item_staus_id" }
+    "status" { set order_by_clause "order by conf_item_status_id" }
     "nr" { set order_by_clause "order by lower(conf_item_nr)" }
     "name" { set order_by_clause "order by lower(conf_item_name)" }
 }
