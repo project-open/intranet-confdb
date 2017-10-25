@@ -269,24 +269,15 @@ set conf_item_sql [im_conf_item_select_sql \
 	-treelevel $treelevel \
 ]
 
-
-
-#ad_return_complaint 1 "<pre>$conf_item_sql</pre>"
-
 set sql "
-	select --DISTINCT on (i.tree_sortkey,conf_item_id)
-		i.*,
-		tree_level(i.tree_sortkey)-1 as indent_level,
-		p.project_id,
-		project_name
+	select	i.*,
+		tree_level(i.tree_sortkey)-1 as indent_level
 	from	($conf_item_sql) i
-		LEFT OUTER JOIN acs_rels r ON (i.conf_item_id = r.object_id_two)
-		LEFT OUTER JOIN im_projects p ON (p.project_id = r.object_id_one)
 	$order_by_clause
 "
 
-
-
+# ad_return_complaint 1 "<pre>$conf_item_sql</pre>"
+# regsub -all {\t} $sql "       " sql; ad_return_complaint 1 "<pre>$sql</pre>"
 
 
 # ---------------------------------------------------------------
