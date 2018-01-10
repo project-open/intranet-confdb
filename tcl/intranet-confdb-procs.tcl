@@ -61,8 +61,8 @@ ad_proc -public im_package_conf_items_id {} {
 
 ad_proc -private im_package_conf_items_id_helper {} {
     return [db_string im_package_core_id {
-        select package_id from apm_packages
-        where package_key = 'intranet-confdb'
+	select package_id from apm_packages
+	where package_key = 'intranet-confdb'
     } -default 0]
 }
 
@@ -70,13 +70,13 @@ ad_proc -private im_package_conf_items_id_helper {} {
 namespace eval im_conf_item {
 
     ad_proc -public new {
-        { -var_hash "" }
+	{ -var_hash "" }
     } {
-        Create a new configuration item.
+	Create a new configuration item.
 	There are only few required field.
 	Primary key is conf_item_nr which defaults to conf_item_name.
 
-        @author frank.bergmann@project-open.com
+	@author frank.bergmann@project-open.com
 	@return The object_id of the new (or existing) Conf Item.
     } {
 
@@ -131,7 +131,7 @@ namespace eval im_conf_item {
 	if {[info exists vars(note)]} { set note $vars(note) }
 
 	# Check if the item already exists
-        set conf_item_id [db_string exists "
+	set conf_item_id [db_string exists "
 		select	conf_item_id
 		from	im_conf_items
 		where
@@ -140,7 +140,7 @@ namespace eval im_conf_item {
 	" -default 0]
 
 	# Create a new item if necessary
-        if {!$conf_item_id} { set conf_item_id [db_string new $conf_item_new_sql] }
+	if {!$conf_item_id} { set conf_item_id [db_string new $conf_item_new_sql] }
 
 	# Update the item with additional variables from the vars array
 	set sql_list [list]
@@ -153,7 +153,7 @@ namespace eval im_conf_item {
 		[join $sql_list ",\n"]
 		where conf_item_id = :conf_item_id
 	"
-        db_dml update_conf_item $sql
+	db_dml update_conf_item $sql
 	return $conf_item_id
     }
 
@@ -162,7 +162,7 @@ namespace eval im_conf_item {
 	-conf_item_id:required
 	-action:required
     } {
-        Write the audit trail
+	Write the audit trail
     } {
 	# Write Audit Trail
 	im_audit -object_id $conf_item_id -action $action
@@ -183,7 +183,7 @@ namespace eval im_conf_item {
     ad_proc -public check_permissions {
 	{-check_only_p 0}
 	-conf_item_id:required
-        -operation:required
+	-operation:required
     } {
 	Check if the user can perform view, read, write or admin the conf_item
     } {
@@ -210,9 +210,9 @@ namespace eval im_conf_item {
 
     ad_proc -public set_status_id {
 	-conf_item_id:required
-        -conf_item_status_id:required
+	-conf_item_status_id:required
     } {
-        Set the conf_item to the specified status.
+	Set the conf_item to the specified status.
     } {
 	set user_id [ad_conn user_id]
 	set user_name [im_name_from_user_id $user_id]
@@ -355,6 +355,21 @@ ad_proc -public im_conf_item_select_sql {
 			r2.object_id_two = ci.conf_item_id and
 			r2.object_id_one = p.project_id
 	UNION
+		-- User belongs to project that belongs to conf item
+		select	sub_ci.conf_item_id
+		from	acs_rels r1,
+			im_projects p,
+			im_projects sub_p,
+			acs_rels r2,
+			im_conf_items ci,
+			im_conf_items sub_ci
+		where	r1.object_id_two = $current_user_id and
+			r1.object_id_one = p.project_id and
+			sub_p.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey) and
+			r2.object_id_one = sub_p.project_id and
+			r2.object_id_two = ci.conf_item_id and
+			sub_ci.tree_sortkey between ci.tree_sortkey and tree_right(ci.tree_sortkey)
+	UNION
 		-- User belongs to a company which is the customer of project that belongs to conf item
 		select	ci.conf_item_id
 		from	im_companies c,
@@ -369,6 +384,37 @@ ad_proc -public im_conf_item_select_sql {
 			r2.object_id_one = p.project_id
 	))
     "
+
+    set project_perm_sql "
+	select  pp.project_id,
+		bom.object_role_id as role_id
+	from
+		im_projects pp,
+		acs_rels r,
+		im_biz_object_members bom
+	where
+		r.object_id_one = pp.project_id and
+		r.object_id_two = :user_id and
+		r.rel_id = bom.rel_id and
+		pp.tree_sortkey in (
+			-- Walk up the conf item is-part-of hierarchy and collect
+			-- all projects for which the CI is a member.
+			-- Returns the list of all these projects and their parents.
+			select  tree_ancestor_keys(p.tree_sortkey)
+			from    im_conf_items ci,
+				acs_rels r,
+				im_projects p
+			where   r.object_id_two = ci.conf_item_id and
+				r.object_id_one = p.project_id and
+				ci.tree_sortkey in (
+					select  tree_ancestor_keys(sci.tree_sortkey)
+					from    im_conf_items sci
+					where   sci.conf_item_id = :conf_item_id
+				)
+			)
+    "
+
+
 
     # -----------------------------------------------
     # Join the query parts
@@ -392,7 +438,7 @@ ad_proc -public im_conf_item_select_sql {
     if {"" != $extra_where} { set extra_where "and $extra_where" }
 
     set select_sql "
-        select distinct
+	select distinct
 		i.*,
 		tree_level(i.tree_sortkey)-1 as conf_item_level,
 		im_category_from_id(i.conf_item_status_id) as conf_item_status,
@@ -401,7 +447,7 @@ ad_proc -public im_conf_item_select_sql {
 		im_cost_center_code_from_id(i.conf_item_cost_center_id) as conf_item_cost_center,
 		im_name_from_user_id(i.conf_item_owner_id) as conf_item_owner,
 		'$conf_item_base_url' || i.conf_item_id as conf_item_url
-        from	im_conf_items i	
+	from	im_conf_items i	
 		$extra_from
 	where	1=1 
 		$extra_where
@@ -516,6 +562,48 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 	set read 1
     }
 
+    # Project-based permissions - Check if the current user is an explicit member
+    # of a project, to which the ConfItem belongs
+    # Normal membership of the project is sufficient to get write permission on the
+    # conf item(?)
+    set project_perm_sql "
+	select  pp.project_id,
+		bom.object_role_id as role_id
+	from
+		im_projects pp,
+		acs_rels r,
+		im_biz_object_members bom
+	where
+		r.object_id_one = pp.project_id and
+		r.object_id_two = :user_id and
+		r.rel_id = bom.rel_id and
+		pp.tree_sortkey in (
+			-- Walk up the conf item is-part-of hierarchy and collect
+			-- all projects for which the CI is a member.
+			-- Returns the list of all these projects and their parents.
+			select  tree_ancestor_keys(p.tree_sortkey)
+			from    im_conf_items ci,
+				acs_rels r,
+				im_projects p
+			where   r.object_id_two = ci.conf_item_id and
+				r.object_id_one = p.project_id and
+				ci.tree_sortkey in (
+					select  tree_ancestor_keys(sci.tree_sortkey)
+					from    im_conf_items sci
+					where   sci.conf_item_id = :conf_item_id
+				)
+			)
+    "
+    # ad_return_complaint 1 "<pre>[im_ad_hoc_query $project_perm_sql]</pre>"
+    db_foreach project_perms $project_perm_sql {
+	# normal project members only get read permissions on the conf items
+	set read 1
+	# PMs get write permissions on the conf items
+	if {[im_biz_object_role_project_manager] eq $role_id} { 
+	    set write 1 
+	}
+    }
+
     # Tricky: Check if the user is the owner of one of the parent CIs...
     # ToDo: not yet implemented...
 
@@ -527,6 +615,8 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 	set write 0
 	set admin 0
     }
+
+    # ad_return_complaint 1 "$read $write $admin"
 }
 
 
@@ -800,7 +890,7 @@ ad_proc -public im_conf_item_list_component {
 		$extra_select
 	from
 		acs_rels r, 
-	        im_conf_items main_ci,
+		im_conf_items main_ci,
 		im_conf_items sub_ci,
 		im_projects main_p, 
 		im_projects sub_p 
@@ -816,7 +906,7 @@ ad_proc -public im_conf_item_list_component {
 		$extra_where
     "
 
-    # fraber 150113: Sorting breaks the query!!!
+    # fraber 150113: Sorting breaks the query
     # Maybe the table needs an index on tree_sortkey?
     set ttt {
 	order by ci.tree_sortkey
@@ -831,7 +921,7 @@ ad_proc -public im_conf_item_list_component {
 	set all_conf_items_hash($conf_item_id) 1
 
 	# The list of conf_items that have a sub-conf_item
-        set parents_hash($conf_item_parent_id) 1
+	set parents_hash($conf_item_parent_id) 1
     }
 
     # ----------------------------------------------------
@@ -953,19 +1043,19 @@ ad_proc -public im_conf_item_list_component {
 
 
    if { "im_project" == [acs_object_type $object_id] } {
-            set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url} {conf_item_project_id $object_id}}]
+	    set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url} {conf_item_project_id $object_id}}]
    } else {
-            set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
+	    set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
    }
 
     append table_body_html "
 	<tr>
 		<td colspan=$colspan>
-	        	<ul>
-                        <li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
-                        </ul>
-                 </td>
-        </tr>
+			<ul>
+			<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
+			</ul>
+		 </td>
+	</tr>
     "
     
     set total_in_limited 0
@@ -1085,11 +1175,11 @@ ad_proc -public im_conf_item_options {
     set cnt 0
     db_foreach conf_item_options $options_sql {
 	set conf_item_name [string range $conf_item_name 0 69 ]
-        set spaces ""
-        for {set i 0} {$i < $conf_item_level} { incr i } {
-            append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-        }
-        lappend options [list "$spaces$conf_item_name" $conf_item_id]
+	set spaces ""
+	for {set i 0} {$i < $conf_item_level} { incr i } {
+	    append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+	}
+	lappend options [list "$spaces$conf_item_name" $conf_item_id]
 	incr cnt
     }
 
@@ -1246,7 +1336,7 @@ ad_proc -public im_navbar_tree_confdb { } {
 		select	t.*
 		from	im_conf_item_type t 
 		where not exists (select * from im_category_hierarchy h where h.child_id = t.conf_item_type_id)
-        "
+	"
 	db_foreach conf_item_types $conf_item_type_sql {
 	    set url [export_vars -base "/intranet-confdb/index" {{type_id $conf_item_type_id}}]
 	    regsub -all " " $conf_item_type "_" conf_item_type_subst
@@ -1278,9 +1368,9 @@ ad_proc -public im_conf_item_related_objects_component {
     Returns a HTML component with the list of related tickets.
 } {
     set params [list \
-                    [list base_url "/intranet-helpdesk/"] \
-                    [list conf_item_id $conf_item_id] \
-                    [list return_url [im_url_with_query]] \
+		    [list base_url "/intranet-helpdesk/"] \
+		    [list conf_item_id $conf_item_id] \
+		    [list return_url [im_url_with_query]] \
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-confdb/www/related-objects-component"]
@@ -1305,22 +1395,22 @@ ad_proc -public im_menu_conf_items_admin_links {
     set return_url [im_url_with_query]
 
     if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
-        lappend result_list [list [lang::message::lookup "" intranet-confdb.Admin_Conf_Items "Admin Conf Items"] "/intranet-confdb/admin"]
+	lappend result_list [list [lang::message::lookup "" intranet-confdb.Admin_Conf_Items "Admin Conf Items"] "/intranet-confdb/admin"]
     }
 
     if {[im_permission $current_user_id "add_conf_items"]} {
-#        lappend result_list [list [lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "New Conf Item"] "[export_vars -base "/intranet-confdb//new" {return_url}]"]
+#	lappend result_list [list [lang::message::lookup "" intranet-confdb.Add_a_new_Conf_Item "New Conf Item"] "[export_vars -base "/intranet-confdb//new" {return_url}]"]
 
 	set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
 	if {$wf_oid_col_exists_p} {
-        set wf_sql "
-                select  t.pretty_name as wf_name,
-                        w.*
-                from    wf_workflows w,
-                        acs_object_types t
-                where   w.workflow_key = t.object_type
-                        and w.object_type = 'im_conf_item'
-        "
+	set wf_sql "
+		select  t.pretty_name as wf_name,
+			w.*
+		from    wf_workflows w,
+			acs_object_types t
+		where   w.workflow_key = t.object_type
+			and w.object_type = 'im_conf_item'
+	"
 	    db_foreach wfs $wf_sql {
 		set new_from_wf_url [export_vars -base "/intranet-confdb/new" {workflow_key}]
 		lappend result_list [list [lang::message::lookup "" intranet-confdb.New_workflow "New %wf_name%"] "$new_from_wf_url"]
@@ -1332,7 +1422,7 @@ ad_proc -public im_menu_conf_items_admin_links {
     set bind_vars [list return_url $return_url]
     set links [im_menu_ul_list -no_uls 1 -list_of_links 1 "conf_items_admin" $bind_vars]
     foreach link $links {
-        lappend result_list $link
+	lappend result_list $link
     }
 
     return $result_list

@@ -62,6 +62,7 @@ if {[info exists conf_item_id] && "" != $conf_item_id && 0 != $conf_item_id} {
 
     # The configuration item exists - check for read or write, depending on mode
     im_conf_item_permissions $current_user_id $conf_item_id view_p read_p write_p admin_p
+    if {$admin_p} { set user_admin_p 1 }
 
     switch $form_mode {
 	"edit" {
