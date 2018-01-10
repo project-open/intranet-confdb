@@ -58,32 +58,46 @@ if {"" == $return_url} {
 # Permissions
 # ---------------------------------------------------------------
 
-switch $form_mode {
-    "edit" {
-	if {![im_permission $current_user_id "add_conf_items"]} {
-	    ad_return_complaint 1 "You don't have sufficient permissions to create or modify configuration items"
+if {[info exists conf_item_id] && "" != $conf_item_id && 0 != $conf_item_id} {
+
+    # The configuration item exists - check for read or write, depending on mode
+    im_conf_item_permissions $current_user_id $conf_item_id view_p read_p write_p admin_p
+
+    switch $form_mode {
+	"edit" {
+	    if {!$write_p} {
+		ad_return_complaint 1 "You don't have sufficient permissions to modify this configuration item"
+		ad_script_abort
+	    }
+	}
+	"display" {
+	    if {!$read_p} {
+		ad_return_complaint 1 "You don't have sufficient permissions to see this configuration item"
+		ad_script_abort
+	    }
+	}
+	default {
+	    ad_return_complaint 1 "Unknown form_mode='$form_mode'"
 	    ad_script_abort
 	}
-
-	if {[info exists conf_item_id]} {
-	    im_conf_item::check_permissions -conf_item_id $conf_item_id -operation "write"
-	}
-
     }
-    "display" {
-	if {![im_permission $current_user_id "view_conf_items"]} {
-	    ad_return_complaint 1 "You don't have sufficient permissions to see any configuration item"
+
+} else {
+
+    # No conf_item_id is set - so the user tries to create a new item
+    switch $form_mode {
+	"edit" {
+	    if {![im_permission $current_user_id "add_conf_items"]} {
+		ad_return_complaint 1 "You don't have sufficient permissions to create or modify configuration items"
+		ad_script_abort
+	    }
+	}
+	default {
+	    ad_return_complaint 1 "Unknown form_mode='$form_mode'"
 	    ad_script_abort
 	}
-	
-	im_conf_item::check_permissions -conf_item_id $conf_item_id -operation "read"
-    }
-    default {
-	ad_return_complaint 1 "Unknown form_mode='$form_mode'"
-	ad_script_abort
     }
 }
-
 
 
 # ---------------------------------------------------------------
