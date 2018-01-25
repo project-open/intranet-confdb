@@ -415,7 +415,6 @@ ad_proc -public im_conf_item_select_sql {
     "
 
 
-
     # -----------------------------------------------
     # Join the query parts
 
