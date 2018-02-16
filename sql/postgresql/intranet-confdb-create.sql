@@ -805,10 +805,12 @@ delete from im_views where view_id = 941;
 --
 insert into im_views (view_id, view_name, visible_for) values (941, 'im_conf_item_list_short', 'view_conf_items');
 
-
+delete from im_view_columns where column_id = 94101;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL,
-'[im_gif del "Delete"]"', '"<input type=checkbox name=conf_item_id.$conf_item_id>', '', '', 1, '');
+'"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''conf_item'',this.checked)>"',
+'"<input type=checkbox name=conf_item_id.$conf_item_id id=conf_item,$conf_item_id>"', 
+'', '', 1, '');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94105, 941, NULL, 'Name',

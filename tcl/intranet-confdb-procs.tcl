@@ -764,14 +764,18 @@ ad_proc -public im_conf_item_list_component {
     set admin_link ""
     set table_header_html ""
     foreach col $column_headers {
-	regsub -all " " $col "_" col_txt
-	if {[string first "<" $col_txt] < 0 && [string first "\[" $col_txt] < 0} {
-	    set col_txt [lang::message::lookup "" intranet-confdb.$col_txt $col]
-	} else {
-	    set col_txt $col
+	set cmd_eval ""
+	set cmd "set cmd_eval $col"
+	eval $cmd
+	regsub -all " " $cmd_eval "_" cmd_eval_subs
+
+	# Only localize "reasonable" strings...
+	if {[regexp {^[a-zA-Z0-9_\.\ ]+$} $cmd_eval_subs]} {
+	    set cmd_eval [lang::message::lookup "" intranet-timesheet2-tasks.$cmd_eval_subs $cmd_eval]
 	}
+
 	if {$user_is_admin_p} { set admin_link [lindex $admin_links $col_ctr] } else { set admin_link "" }
-	append table_header_html "  <td class=\"rowtitle\">$col_txt$admin_link</td>\n"
+	append table_header_html "  <td class=\"rowtitle\">$cmd_eval$admin_link</td>\n"
 	incr col_ctr
     }
 
@@ -895,8 +899,7 @@ ad_proc -public im_conf_item_list_component {
 		im_projects sub_p 
 		$extra_from
 	where
-		main_p.project_id = $object_id and
-		main_p.project_id = 48410 and
+		main_p.project_id = :object_id and
 		sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 		sub_p.project_id = r.object_id_one and
 		r.object_id_two = main_ci.conf_item_id and 
