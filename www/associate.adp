@@ -6,7 +6,7 @@
 <h1>@page_title@</h1>
 
 <p>
-<%= [lang::message::lookup "" intranet-confdb.Associate_Conf_Items_Msg "This page allows you to associated your configuration items with other objects."] %>
+<%= [lang::message::lookup "" intranet-confdb.Associate_Conf_Items_Msg "This page allows you to associate your configuration items with other objects."] %>
 </p>
 <br>
 
