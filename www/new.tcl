@@ -13,6 +13,8 @@ ad_page_contract {
     Show or create a new configuration item
     @author frank.bergmann@project-open.com
     @parameter view_name Set to "component" in order to show a specific component
+
+    @parameter conf_item_project_id Associated new conf items with project
 } {
     conf_item_id:integer,optional
     { return_url "/intranet-confdb/index"}

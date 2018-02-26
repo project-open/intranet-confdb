@@ -643,6 +643,7 @@ ad_proc -public im_conf_item_list_component {
     # ---------------------- Security - Show the comp? -------------------------------
     set current_user_id [auth::require_login]
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+    set org_object_id $object_id
 
     if {"" == $member_id || 0 == $member_id} { set member_id $restrict_to_member_id }
     if {"" == $order_by} {
@@ -899,7 +900,7 @@ ad_proc -public im_conf_item_list_component {
 		im_projects sub_p 
 		$extra_from
 	where
-		main_p.project_id = :object_id and
+		main_p.project_id = :org_object_id and
 		sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 		sub_p.project_id = r.object_id_one and
 		r.object_id_two = main_ci.conf_item_id and 
@@ -1044,19 +1045,21 @@ ad_proc -public im_conf_item_list_component {
     }
 
 
-   if { "im_project" == [acs_object_type $object_id] } {
-	    set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url} {conf_item_project_id $object_id}}]
-   } else {
-	    set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
-   }
+    if { "im_project" == [acs_object_type $org_object_id] } {
+	set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url} {conf_item_project_id $org_object_id}}]
+    } else {
+	set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
+    }
 
     append table_body_html "
 	<tr>
-		<td colspan=$colspan>
-			<ul>
-			<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
-			</ul>
-		 </td>
+	<td colspan=$colspan>
+	<ul>
+		<li><a href=\"[export_vars -base "/intranet-confdb/associate-conf-item-with-task" {{object_id $org_object_id} {return_url $current_url}}]\"
+		>[lang::message::lookup "" intranet-confdb.Associate_New_Conf_Item "Associate new Conf Item"]</a>
+		<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.Create_New_Conf_Item "Create new Conf Item"]</a>
+	</ul>
+	</td>
 	</tr>
     "
     
@@ -1088,13 +1091,8 @@ ad_proc -public im_conf_item_list_component {
     # ---------------------- Format the action bar at the bottom ------------
 
     set table_footer_action "
-
 	<table width='100%'>
 	<tr>
-	<td align=left>
-		<a href=\"/intranet-confdb/[export_vars -base new {return_url}]\"
-		>[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
-	</td>
 	<td align=right>
 		<select name=action>
 		<option value=save>[lang::message::lookup "" intranet-confdb.Save_Changes "Save Changes"]</option>
