@@ -1210,7 +1210,7 @@ ad_proc -public im_conf_item_list_component_old {
 	[list return_url [im_url_with_query]] \
     ]
 
-    set result [ad_parse_template -params $params "/packages/intranet-confdb/www/conf-item-list-component"]
+    set result [ad_parse_template -params $params "/packages/intranet-confdb/lib/conf-item-list-component"]
     set result [string trim $result]
     return [string trim $result]
 }
@@ -1375,7 +1375,7 @@ ad_proc -public im_conf_item_related_objects_component {
 		    [list return_url [im_url_with_query]] \
     ]
 
-    set result [ad_parse_template -params $params "/packages/intranet-confdb/www/related-objects-component"]
+    set result [ad_parse_template -params $params "/packages/intranet-confdb/lib/related-objects-component"]
     return [string trim $result]
 }
 
