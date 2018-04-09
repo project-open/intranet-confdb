@@ -1212,6 +1212,30 @@ order by
 
 
 
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'conf_item_type', 'Conf Item Type', 'Conf Item Type',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Conf Item Type"}}'
+);
+update im_dynfield_widgets
+set deref_plpgsql_function = 'im_category_from_id'
+where widget_name = 'conf_item_type';
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'conf_item_status', 'Conf Item Status', 'Conf Item Status',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Conf Item Status"}}'
+);
+update im_dynfield_widgets
+set deref_plpgsql_function = 'im_category_from_id'
+where widget_name = 'conf_item_status';
+
+
+
+
+
 
 
 -----------------------------------------------------------
