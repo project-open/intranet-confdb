@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-confdb" locale="de_DE" charset="ISO-8859-1">
 
-  <msg key="2nd_Level_Items">2nd Level Items</msg>
+  <msg key="2nd_Level_Items">2. Ebene</msg>
   <msg key="Action">Aktion</msg>
   <msg key="Active">Aktiv</msg>
   <msg key="Add_a_new_Conf_Item">Neues Konfigurationselement</msg>
@@ -11,7 +11,10 @@
   <msg key="Assoc_Projects">Assoziierte Projekte</msg>
   <msg key="Assoc_Tickets">Assoziierte Tickets</msg>
   <msg key="Assoc_with_a_new_project">Mit neuem Projekt assoziieren</msg>
+  <msg key="Associate_New_Conf_Item">Neues Konfigurationselement assoziieren</msg>
   <msg key="Associated_Tickets">Assoziierte Tickets</msg>
+  <msg key="Built">Gebaut</msg>
+  <msg key="Clear_error_messages">Fehlermeldungen löschen</msg>
   <msg key="Column_CC">Kosten-&lt;br&gt;stelle</msg>
   <msg key="Column_Descr">Beschr</msg>
   <msg key="Column_IP">IP</msg>
@@ -45,6 +48,7 @@
   <msg key="Configuration_Database">Konfigurationsdatenbank</msg>
   <msg key="Configuration_Items">Konfigurationselemente</msg>
   <msg key="Cost_Center">Kostenstelle</msg>
+  <msg key="Create_New_Conf_Item">Neues Konfigurationselement</msg>
   <msg key="CVS_Repository">CVS-Repository</msg>
   <msg key="Delete">Löschen</msg>
   <msg key="Direction">Richtung</msg>
@@ -62,6 +66,8 @@
   <msg key="HTTP-Server">HTTP-Server</msg>
   <msg key="Import_Conf_Items_from_CSV">Konfigurationselemente von CSV importieren</msg>
   <msg key="Inactive">Inaktiv</msg>
+  <msg key="Intactive_Defunct">Inactive (Defunct)</msg>
+  <msg key="Intactive_Planned">Inaktiv (geplant)</msg>
   <msg key="IP_Address">IP</msg>
   <msg key="Laptop">Laptop</msg>
   <msg key="License">Lizenz</msg>
@@ -80,18 +86,21 @@
   <msg key="Netmap">Netmap</msg>
   <msg key="Network">Netzwerk</msg>
   <msg key="Network_Device">Netzwerkgerät</msg>
+  <msg key="Network_Element">Netz-Element</msg>
   <msg key="Network_Router">Netzwerk-Router</msg>
   <msg key="Network_Switch">Netzwerk-Switch</msg>
   <msg key="New_Association">Neue Assoziation</msg>
   <msg key="New_Bug">Neuer Fehler</msg>
   <msg key="New_Conf_Item">Neues Konfigurationselement</msg>
   <msg key="No_Conf_Items_Found">Keine Elemente gefunden</msg>
+  <msg key="Nuke">Nuken</msg>
   <msg key="Object_Name">Name</msg>
   <msg key="Object_Type">Objekttyp</msg>
   <msg key="OS">OS</msg>
   <msg key="OS_Version">OS-Version</msg>
   <msg key="Owner">Besitzer</msg>
   <msg key="Personal_Computer">Personalcomputer</msg>
+  <msg key="Planned">Geplant</msg>
   <msg key="Postfix_Process">Postfix-Prozess</msg>
   <msg key="PostgreSQL_Process">PostgreSQL-Prozess</msg>
   <msg key="Pound_Process">Pound-Process</msg>
