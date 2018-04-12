@@ -39,7 +39,7 @@ if {"" != $object_type} {
 }
 
 if {!$object_write} {
-    ad_return_complaint $action_forbidden_msg
+    ad_return_complaint 1 $action_forbidden_msg
     ad_script_abort
 }
 
