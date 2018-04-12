@@ -653,6 +653,18 @@ ad_proc -public im_conf_item_list_component {
     # URL to toggle open/closed tree
     set open_close_url "/intranet/biz-object-tree-open-close"    
 
+    # Permissions
+    set object_view 0
+    set object_read 0
+    set object_write 0
+    set object_admin 0
+    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :object_id" -default ""]
+    if {"" != $object_type} {
+	set perm_cmd "${object_type}_permissions \$current_user_id \$object_id object_view object_read object_write object_admin"
+	eval $perm_cmd
+    }
+
+
     # ---------------------- Defaults ----------------------------------
     # Get parameters from HTTP session
     # Don't trust the container page to pass-on that value...
@@ -1051,13 +1063,24 @@ ad_proc -public im_conf_item_list_component {
 	set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
     }
 
+    set table_body_html_ul ""
+    if {$object_write} { 
+	append table_body_html_ul "
+		<li><a href=\"[export_vars -base "/intranet-confdb/associate-conf-item-with-task" {{object_id $org_object_id} {return_url $current_url}}]\"
+		>[lang::message::lookup "" intranet-confdb.Associate_New_Conf_Item "Associate new Conf Item"]</a>
+        "
+    }
+    if {[im_permission $current_user_id "add_conf_items"]} {
+	append table_body_html_ul "
+		<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.Create_New_Conf_Item "Create new Conf Item"]</a>
+        "
+    }
+
     append table_body_html "
 	<tr>
 	<td colspan=$colspan>
 	<ul>
-		<li><a href=\"[export_vars -base "/intranet-confdb/associate-conf-item-with-task" {{object_id $org_object_id} {return_url $current_url}}]\"
-		>[lang::message::lookup "" intranet-confdb.Associate_New_Conf_Item "Associate new Conf Item"]</a>
-		<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.Create_New_Conf_Item "Create new Conf Item"]</a>
+                $table_body_html_ul
 	</ul>
 	</td>
 	</tr>
