@@ -258,7 +258,7 @@ ad_proc -public im_conf_item_select_sql {
     {-cost_center_id ""} 
     {-var_list "" }
     {-parent_id ""}
-    {-treelevel 0}
+    {-treelevel ""}
 } {
     Returns an SQL statement that allows you to select a range of
     configuration items, given a number of conditions.
@@ -315,9 +315,24 @@ ad_proc -public im_conf_item_select_sql {
     }
 
     if {"" != $project_id && 0 != $project_id} {
-	lappend extra_wheres "project_rel.object_id_two = i.conf_item_id"
-	lappend extra_wheres "project_rel.object_id_one = $project_id"
-	lappend extra_froms "acs_rels project_rel"
+	# lappend extra_wheres "project_rel.object_id_two = i.conf_item_id"
+	# lappend extra_wheres "project_rel.object_id_one = $project_id"
+	# lappend extra_froms "acs_rels project_rel"
+
+	lappend extra_wheres "i.conf_item_id in (
+		-- CIs related to the current project
+		select	sub_ci.conf_item_id
+		from	im_projects p,
+			im_projects sub_p,
+			acs_rels r2,
+			im_conf_items ci,
+			im_conf_items sub_ci
+		where	p.project_id = $project_id and
+			sub_p.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey) and
+			r2.object_id_one = sub_p.project_id and
+			r2.object_id_two = ci.conf_item_id and
+			sub_ci.tree_sortkey between ci.tree_sortkey and tree_right(ci.tree_sortkey)
+        )"
     }
 
     # -----------------------------------------------
@@ -897,39 +912,19 @@ ad_proc -public im_conf_item_list_component {
 
 
     # ---------------------- Get the SQL Query -------------------------
-    set sql "
-	select
-		sub_ci.*,
-		tree_level(sub_ci.tree_sortkey) - tree_level(main_ci.tree_sortkey) as conf_item_level,
-		im_category_from_id(sub_ci.conf_item_status_id) as conf_item_status,
-		im_category_from_id(sub_ci.conf_item_type_id) as conf_item_type
-		$extra_select
-	from
-		acs_rels r, 
-		im_conf_items main_ci,
-		im_conf_items sub_ci,
-		im_projects main_p, 
-		im_projects sub_p 
-		$extra_from
-	where
-		main_p.project_id = :org_object_id and
-		sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
-		sub_p.project_id = r.object_id_one and
-		r.object_id_two = main_ci.conf_item_id and 
-		sub_ci.tree_sortkey between main_ci.tree_sortkey and tree_right(main_ci.tree_sortkey)
-		$restriction_clause
-		$extra_where
-    "
 
-    # fraber 150113: Sorting breaks the query
-    # Maybe the table needs an index on tree_sortkey?
-    set ttt {
-	order by ci.tree_sortkey
-    }
+    set conf_item_sql [im_conf_item_select_sql \
+		 -project_id $org_object_id \
+		 -treelevel "" \
+		 -type_id "" \
+		 -status_id "" \
+		 -owner_id "" \
+		 -cost_center_id "" \
+    ]
+    # ad_return_complaint 1 "<pre>$conf_item_sql</Pre>"
+    # ad_return_complaint 1 "[im_ad_hoc_query -format html $conf_item_sql]"
 
-#    ad_return_complaint 1 "<pre>[im_ad_hoc_query $sql]\n\n\n$sql</pre>"
-    
-    db_multirow conf_item_list_multirow conf_item_list_sql $sql {
+    db_multirow conf_item_list_multirow conf_item_list_sql $conf_item_sql {
 
 	# Perform the following steps in addition to calculating the multirow:
 	# The list of all conf_items
@@ -957,7 +952,7 @@ ad_proc -public im_conf_item_list_component {
 				ohs.page_url = 'default' and
 				ohs.object_id in (
 					select	conf_item_id
-					from	($sql) t
+					from	($conf_item_sql) t
 				)
 			) and
 		child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
