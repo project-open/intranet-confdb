@@ -30,9 +30,9 @@ if {!$del_p} {
 }
 
 if {[info exists conf_item_id]} {
-	foreach id $conf_item_id {
-	    im_conf_item_delete -conf_item_id $id
-	}
+    foreach id $conf_item_id {
+	im_conf_item_nuke -conf_item_id $id
+    }
 }
 
 template::forward $return_url

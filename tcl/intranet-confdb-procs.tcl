@@ -497,51 +497,6 @@ ad_proc -public im_conf_item_update_sql {
 
 
 # ----------------------------------------------------------------------
-# Delete a conf item
-# ---------------------------------------------------------------------
-
-ad_proc -public im_conf_item_delete {
-    -conf_item_id:required
-} {
-    Delete a configuration iem
-} {
-    set parent_p [db_string parent "select count(*) from im_conf_items where conf_item_parent_id = :conf_item_id"]
-    if {$parent_p > 0} { ad_return_complaint 1 "<b>Can't Delete Conf Item</b>:<br>The configuration item is the parent of another conf item. <br>Please delete the children first." }
-
-    db_transaction {
-	
-	# Delete any user that might be associated with Conf Item
-	set user_rels_sql "
-		select	r.*
-		from	acs_rels r,
-			persons p
-		where	object_id_two = p.person_id
-			and object_id_one = :conf_item_id
-	"
-	db_foreach user_rels_del $user_rels_sql {
-	    db_string del_user_rel "select im_biz_object_member__delete(:object_id_one, :object_id_two)"
-	}
-
-	# Delete any user that might be associated with Conf Item
-	set conf_proj_rels_sql "
-		select	r.*
-		from	acs_rels r,
-			im_projects p
-		where	object_id_one = p.project_id
-			and object_id_two = :conf_item_id
-	"
-	db_foreach conf_proj_rels_del $conf_proj_rels_sql {
-	    db_string del_conf_proj_rel "select im_conf_item_project_rel__delete(:rel_id)"
-	}
-
-	# Delete references in im_tickets to the conf item.
-	db_dml del_ticket_refs "update im_tickets set ticket_conf_item_id = NULL where ticket_conf_item_id = :conf_item_id"
-
-	db_string del_conf_item "select im_conf_item__delete(:conf_item_id)"
-    }
-}
-
-# ----------------------------------------------------------------------
 # Permissions
 # ---------------------------------------------------------------------
 
@@ -1263,6 +1218,8 @@ ad_proc -public im_conf_item_nuke {
     This is only suitable for test purposes. During production operations,
     please set the ConfItem's status to "deleted".
 } {
+    set parent_p [db_string parent "select count(*) from im_conf_items where conf_item_parent_id = :conf_item_id"]
+    if {$parent_p > 0} { ad_return_complaint 1 "<b>Can't Delete Conf Item</b>:<br>The configuration item is the parent of another conf item. <br>Please delete the children first." }
 
     # Relationships
     ns_log Notice "projects/nuke-2: rels"
@@ -1296,12 +1253,18 @@ ad_proc -public im_conf_item_nuke {
 	if {[im_table_exists im_release_items]} {
 	    db_dml del_rels "delete from im_release_items where rel_id = :rel_id"
 	}
+
 	db_dml del_rels "delete from acs_rels where rel_id = :rel_id"
 	db_dml del_rels "delete from acs_objects where object_id = :rel_id"
+
+	db_string del_user_rel "select im_biz_object_member__delete(:object_id_one, :object_id_two)"
     }
 
-
     db_dml nuke_ci_context_id "update acs_objects set context_id = null where context_id = :conf_item_id"
+
+    # Delete references in im_tickets to the conf item.
+    db_dml del_ticket_refs "update im_tickets set ticket_conf_item_id = NULL where ticket_conf_item_id = :conf_item_id"
+
     db_string nuke_ci "select im_conf_item__delete(:conf_item_id)"
 }
 
