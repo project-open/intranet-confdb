@@ -259,6 +259,7 @@ ad_proc -public im_conf_item_select_sql {
     {-var_list "" }
     {-parent_id ""}
     {-treelevel ""}
+    {-current_user_id ""}
 } {
     Returns an SQL statement that allows you to select a range of
     configuration items, given a number of conditions.
@@ -276,8 +277,14 @@ ad_proc -public im_conf_item_select_sql {
 	- member_id: Check for owner_id OR association relationship.
 } {
     # Prepare and check some variables.
-    set current_user_id 0
-    if {[ns_conn isconnected]} { set current_user_id [ad_conn user_id] }
+    if {![ns_conn isconnected]} {
+	# Not connected. We can't do much...
+	if {"" eq $current_user_id} { set current_user_id 0 }
+    } else {
+	set current_user_id [ad_conn user_id]
+    }
+
+    set view_conf_items_all_p [im_permission $current_user_id "view_conf_items_all"]
 
     # base url, where only the conf_item_id has to be added
     set conf_item_base_url "/intranet-confdb/new?form_mode=display&conf_item_id="
@@ -338,8 +345,9 @@ ad_proc -public im_conf_item_select_sql {
     # -----------------------------------------------
     # Permissions
 
-    set perm_where "
-	('t' = acs_permission__permission_p([subsite::main_site_id], $current_user_id, 'view_conf_items_all') OR
+    set perm_where ""
+    if {!$view_conf_items_all_p} {
+	set perm_where "
 	i.conf_item_id in (
 		-- User is explicit member of conf item
 		select	ci.conf_item_id
@@ -397,8 +405,9 @@ ad_proc -public im_conf_item_select_sql {
 			p.company_id = c.company_id and
 			r2.object_id_two = ci.conf_item_id and
 			r2.object_id_one = p.project_id
-	))
+	)
     "
+    }
 
     set project_perm_sql "
 	select  pp.project_id,
