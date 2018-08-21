@@ -78,6 +78,7 @@
   <msg key="Software_Component">Componente software</msg>
   <msg key="Specs">Specifiche</msg>
   <msg key="Subnet">Subnet</msg>
+  <msg key="There_are_no_active_conf_items">Non esistono item di configurazione per questa richiesta</msg>
   <msg key="Ticket_Name">Nome ticket</msg>
   <msg key="Top_Items">Elementi di 1º livello</msg>
   <msg key="Workgroup">Gruppo di lavoro</msg>
