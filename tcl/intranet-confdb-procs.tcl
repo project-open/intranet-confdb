@@ -318,7 +318,7 @@ ad_proc -public im_conf_item_select_sql {
 
     # Owner: Check for conf_item_owner_id field
     if {"" != $owner_id && 0 != $owner_id} {
-	lappend extra_wheres "i.conf_item_owner_id = $owner_id"
+	lappend extra_wheres "(i.conf_item_owner_id = $owner_id OR i.conf_item_id in (select object_id_two from acs_rels where object_id_one = $owner_id))"
     }
 
     if {"" != $project_id && 0 != $project_id} {
@@ -637,7 +637,7 @@ ad_proc -public im_conf_item_list_component {
     set object_read 0
     set object_write 0
     set object_admin 0
-    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :object_id" -default ""]
+    set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :org_object_id" -default ""]
     if {"" != $object_type} {
 	set perm_cmd "${object_type}_permissions \$current_user_id \$object_id object_view object_read object_write object_admin"
 	eval $perm_cmd
@@ -877,16 +877,22 @@ ad_proc -public im_conf_item_list_component {
 
     # ---------------------- Get the SQL Query -------------------------
 
-    set conf_item_sql [im_conf_item_select_sql \
-		 -project_id $org_object_id \
-		 -treelevel "" \
-		 -type_id "" \
-		 -status_id "" \
-		 -owner_id "" \
-		 -cost_center_id "" \
-    ]
-    # ad_return_complaint 1 "<pre>$conf_item_sql</Pre>"
-    # ad_return_complaint 1 "[im_ad_hoc_query -format html $conf_item_sql]"
+    switch $object_type {
+	user {
+	    set conf_item_sql [im_conf_item_select_sql -owner_id $org_object_id]
+	}
+	default {
+	    set conf_item_sql [im_conf_item_select_sql \
+				   -project_id $org_object_id \
+				   -treelevel "" \
+				   -type_id "" \
+				   -status_id "" \
+				   -owner_id "" \
+				   -cost_center_id "" \
+				  ]
+	}
+    }
+    # ad_return_complaint 1 "object_type=$object_type<br><pre>$conf_item_sql</pre><br>[im_ad_hoc_query -format html $conf_item_sql]"
 
     db_multirow conf_item_list_multirow conf_item_list_sql $conf_item_sql {
 
