@@ -711,7 +711,7 @@ select acs_rel_type__create_type (
    'im_conf_item_project_rels',	-- table_name
    'rel_id',			-- id_column
    'intranet-conf-item-rel',	-- package_name
-   'im_project',		-- object_type_one
+   'acs_object',		-- object_type_one
    'member',			-- role_one
     0,				-- min_n_rels_one
     null,			-- max_n_rels_one
