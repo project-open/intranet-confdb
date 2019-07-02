@@ -23,6 +23,7 @@ ad_page_contract {
     conf_item_type_id:integer,optional
     { conf_item_project_id "" }
     { enable_master_p 1}
+    { plugin_id "" }
 }
 
 set current_user_id [auth::require_login]
@@ -358,4 +359,26 @@ append result [im_generic_table_component -table_name "ocs_softwares" -select_co
 # append result [im_generic_table_component -table_name "ocs_network_devices" -select_column "hardware_id" -select_value $hardware_id -exclude_columns {id hardware_id}]
     }
 }
+
+
+
+
+# ---------------------------------------------------------------
+# Conf-Item Sub-Menu
+# ---------------------------------------------------------------
+
+# Setup the subnavbar
+set bind_vars [ns_set create]
+if {[info exists conf_item_id]} { ns_set put $bind_vars conf_item_id $conf_item_id }
+if {![info exists conf_item_id]} { set conf_item_id "" }
+
+set conf_item_parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='conf_item'" -default 0]
+set sub_navbar [im_sub_navbar \
+    -components \
+    -current_plugin_id $plugin_id \
+    -base_url "/intranet-confdb/new?conf_item_id=$conf_item_id" \
+    -plugin_url "/intranet-confdb/new" \
+    $conf_item_parent_menu_id \
+    $bind_vars "" "pagedesriptionbar" "conf_item_summary"] 
+
 

@@ -19,7 +19,7 @@
 
 <if @view_name@ eq "component">
 
-   <%= [im_component_page -plugin_id $plugin_id -return_url "/intranet-helpdesk/new?ticket_id=$ticket_id"] %>
+   <%= [im_component_page -plugin_id $plugin_id -return_url [export_vars -base "/intranet-confdb/new" {conf_item_id}]] %>
 
 </if>
 <else>
