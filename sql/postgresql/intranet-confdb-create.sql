@@ -437,7 +437,7 @@ FOR EACH ROW EXECUTE PROCEDURE im_conf_items_tsearch();
 
 -- 11700-11799	Intranet Conf Item Status
 SELECT im_category_new(11700, 'Active', 'Intranet Conf Item Status');
-SELECT im_category_new(11702, 'Preactive', 'Intranet Conf Item Status');
+SELECT im_category_new(11702, 'Deleted', 'Intranet Conf Item Status');
 SELECT im_category_new(11716, 'Archived', 'Intranet Conf Item Status');
 SELECT im_category_new(11718, 'Zombie', 'Intranet Conf Item Status');
 SELECT im_category_new(11720, 'Inactive', 'Intranet Conf Item Status');
