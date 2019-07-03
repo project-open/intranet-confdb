@@ -1134,11 +1134,12 @@ ad_proc -public im_conf_item_options {
     {-project_id ""} 
     {-owner_id ""} 
     {-cost_center_id ""} 
+    {-treelevel "2"}
 } {
     Returns a list of all Conf Items.
 } {
     set var_list [list type_id $type_id status_id $status_id project_id $project_id owner_id $owner_id cost_center_id $cost_center_id]
-    set options_sql [im_conf_item_select_sql -treelevel 2 -var_list $var_list]
+    set options_sql [im_conf_item_select_sql -treelevel $treelevel -var_list $var_list]
 
     set options [list]
     if {$include_empty_p} { lappend options [list $include_empty_name ""] }
