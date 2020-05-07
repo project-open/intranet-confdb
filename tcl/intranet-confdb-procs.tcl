@@ -653,6 +653,7 @@ ad_proc -public im_conf_item_list_component {
     # Get the start_idx in case of pagination
     set start_idx [ns_set get $form_vars "conf_item_start_idx"]
     if {"" == $start_idx} { set start_idx 0 }
+    if {[im_security_alert_check_integer -location "im_conf_item_list_component" -value $start_idx]} { set start_idx 0 }
     set end_idx [expr {$start_idx + $max_entries_per_page - 1}]
 
     set bgcolor(0) " class=roweven"
