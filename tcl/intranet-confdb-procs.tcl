@@ -647,13 +647,9 @@ ad_proc -public im_conf_item_list_component {
     # ---------------------- Defaults ----------------------------------
     # Get parameters from HTTP session
     # Don't trust the container page to pass-on that value...
-    set form_vars [ns_conn form]
-    if {"" == $form_vars} { set form_vars [ns_set create] }
-
     # Get the start_idx in case of pagination
-    set start_idx [ns_set get $form_vars "conf_item_start_idx"]
+    set start_idx [im_opt_val -limit_to integer "conf_item_start_idx"]
     if {"" == $start_idx} { set start_idx 0 }
-    if {[im_security_alert_check_integer -location "im_conf_item_list_component" -value $start_idx]} { set start_idx 0 }
     set end_idx [expr {$start_idx + $max_entries_per_page - 1}]
 
     set bgcolor(0) " class=roweven"
@@ -714,21 +710,12 @@ ad_proc -public im_conf_item_list_component {
     if {$debug} { ns_log Notice "im_conf_item_list_component: column_headers=$column_headers" }
 
     # -------- Compile the list of parameters to pass-through-------
-    set form_vars [ns_conn form]
-    if {"" == $form_vars} { set form_vars [ns_set create] }
-
     set bind_vars [ns_set create]
     foreach var $export_var_list {
-	upvar 1 $var value
-	if { [info exists value] } {
+	set value [im_opt_val $var]
+	if {$value ne ""} {
 	    ns_set put $bind_vars $var $value
 	    if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
-	} else {
-	    set value [ns_set get $form_vars $var]
-	    if {$value ne ""} {
- 		ns_set put $bind_vars $var $value
- 		if {$debug} { ns_log Notice "im_conf_item_list_component: $var <- $value" }
-	    }
 	}
     }
 
