@@ -186,7 +186,7 @@ db_foreach column_list_sql $column_sql {
 		UNION select 'end_date'
 	"
 	db_foreach pass_through_vars $dynfield_sql {
-	    set value [im_opt_val $attribute_name]
+	    set value [im_opt_val -limit_to nohtml $attribute_name]
 	    if {"" != $value} {
 		append col_url "&$attribute_name=$value"
 	    }

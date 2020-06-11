@@ -34,7 +34,7 @@ set focus ""
 set sub_navbar ""
 
 # org_conf_item_id required by Portlet Components!
-set org_conf_item_id [im_opt_val conf_item_id]
+set org_conf_item_id [im_opt_val -limit_to integer conf_item_id]
 
 set page_title [lang::message::lookup "" intranet-confdb.New_Conf_Item "New Configuration Item"]
 set show_components_p 0
@@ -286,7 +286,7 @@ set conf_item_sql [im_conf_item_select_sql \
 	-owner_id "" \
 	-cost_center_id "" \
 	-treelevel "" \
-	-parent_id [im_opt_val conf_item_id] \
+	-parent_id [im_opt_val -limit_to integer conf_item_id] \
 ]
 
 set sql "
