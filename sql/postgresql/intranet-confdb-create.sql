@@ -807,7 +807,7 @@ insert into im_views (view_id, view_name, visible_for) values (940, 'im_conf_ite
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94001,940,NULL, 
-'<input type=checkbox name=_dummy onclick="acs_ListCheckAll(''conf_item'',this.checked)">', 
+'<input id=list_check_all type=checkbox name=_dummy>', 
 '$action_checkbox', '', '', 1, '');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
@@ -852,7 +852,7 @@ insert into im_views (view_id, view_name, visible_for) values (941, 'im_conf_ite
 delete from im_view_columns where column_id = 94101;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL,
-'"<input type=checkbox name=_dummy onclick=acs_ListCheckAll(''conf_item'',this.checked)>"',
+'"<input id=list_check_all type=checkbox name=_dummy>"',
 '"<input type=checkbox name=conf_item_id.$conf_item_id id=conf_item,$conf_item_id>"', 
 '', '', 1, '');
 

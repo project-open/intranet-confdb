@@ -260,10 +260,7 @@ template::list::create \
     -row_pretty_plural "[lang::message::lookup "" intranet-confdb.Conf_Items_Items {Conf Items}]" \
     -elements {
 	conf_item_chk {
-	    label "<input type=\"checkbox\" 
-			  name=\"_dummy\" 
-			  onclick=\"acs_ListCheckAll('conf_items_list', this.checked)\" 
-			  title=\"Check/uncheck all rows\">"
+	    label "<input id=list_check_all type=\"checkbox\" name=\"_dummy\" title=\"Check/uncheck all rows\">"
 	    display_template {
 		@conf_item_lines.conf_item_chk;noquote@
 	    }

@@ -1096,6 +1096,12 @@ ad_proc -public im_conf_item_list_component {
     # ---------------------- Join all parts together ------------------------
 
     set component_html "
+        <script type=\"text/javascript\" nonce=\"[im_csp_nonce]\">
+	window.addEventListener('load', function() {
+	    document.getElementById('list_check_all').addEventListener('click', function() { acs_ListCheckAll('conf_item', this.checked) });
+	});
+	</script>
+
 	<form action=/intranet-confdb/conf_item-action method=POST>
 	[export_vars -form {conf_item_id return_url}]
 	<table bgcolor=white border=0 cellpadding=1 cellspacing=1 class=\"table_list_page\">
