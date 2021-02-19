@@ -497,7 +497,7 @@ while(<IN>) {
 	}
 	if (/^\s*(\w+)\s+.*int.*auto_increment/i) {  #  example: data_id mediumint(8) unsigned NOT NULL auto_increment,
 	    # int,auto_increment -> serial (same as what is done below)
-	    # for postgres side see http://www.postgresql.org/docs/7.4/interactive/datatype.html#DATATYPE-SERIAL
+	    # for postgres side see https://www.postgresql.org/docs/7.4/interactive/datatype.html#DATATYPE-SERIAL
 	    $seq = get_identifier($table, $1, 'seq');
 	    $quoted_column=quote_and_lc($1);  
 	    $pre_create_sql.= "DROP SEQUENCE $seq CASCADE \;\n\n";  # cascade will force drop of table, too
@@ -523,7 +523,7 @@ while(<IN>) {
 	if (m/^(\s*)(\w+)\s+(bigint.*)unsigned/) {  
 	    $quoted_column=quote_and_lc($2);  
 	    #  see http://archives.postgresql.org/pgsql-general/2005-07/msg01178.php
-	    #  and see http://www.postgresql.org/docs/8.2/interactive/datatype-numeric.html
+	    #  and see https://www.postgresql.org/docs/8.2/interactive/datatype-numeric.html
 	    # see  http://dev.mysql.com/doc/refman/5.1/en/numeric-types.html  max size == 20 digits
 	    s/^(\s*)(\w+)\s+bigint(.*)unsigned/$1 $quoted_column NUMERIC (20,0) CHECK ($quoted_column >= 0)/i;
 
@@ -535,7 +535,7 @@ while(<IN>) {
 	#  MEDIUMINT  A medium-sized integer. The signed range is -8388608 to 8388607. The unsigned range is 0 to 16777215.
 	#  INT A normal-size integer. The signed range is -2147483648 to 2147483647. The unsigned range is 0 to 4294967295.
 	# BIGINT The signed range is -9223372036854775808 to 9223372036854775807. The unsigned range is 0 to 18446744073709551615
-	# for postgres see http://www.postgresql.org/docs/8.2/static/datatype-numeric.html#DATATYPE-INT
+	# for postgres see https://www.postgresql.org/docs/8.2/static/datatype-numeric.html#DATATYPE-INT
 	s/^(\s+"*\w+"*\s+)tinyint/$1 smallint/i; 
 	s/^(\s+"*\w+"*\s+)mediumint/$1 integer/i; 
 	
@@ -751,7 +751,7 @@ update_".$table_no_quotes."();\n";
 	    # the tsvector datatype is made for these types of things
 	    # example mysql file:
 	    #  what is tsvector datatype?
-	    #  http://www.sai.msu.su/~megera/postgres/gist/tsearch/V2/docs/tsearch-V2-intro.html
+	    #  https://www.sai.msu.su/~megera/postgres/gist/tsearch/V2/docs/tsearch-V2-intro.html
 	    warn "dba must do fulltext key transformation for $table\n";
 	    next;
 	} 
@@ -855,7 +855,7 @@ update_".$table_no_quotes."();\n";
 	$pre_create_sql="";
 	
 #    s/'(.*?)'([,)])/E'$1'$2/g;
-	# for the E'' see http://www.postgresql.org/docs/8.2/interactive/release-8-1.html
+	# for the E'' see https://www.postgresql.org/docs/8.2/interactive/release-8-1.html
 
 	# split 'extended' INSERT INTO statements to something PostgreSQL can  understand
 	( $insert_table,  $valueString) = $_ =~ m/^INSERT\s+INTO\s+['`"]*(.*?)['`"]*\s+VALUES\s*(.*)/i;
