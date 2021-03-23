@@ -48,7 +48,7 @@ set action_forbidden_msg [lang::message::lookup "" intranet-confdb.Action_Forbid
 
 # ------------------------------------------
 # Check the TCL that determines the visibility of the action
-set visible_tcl [util_memoize [list db_string visible_tcl "select visible_tcl from im_categories where category_id = $action_id"]]
+set visible_tcl [util_memoize [list db_string visible_tcl "select visible_tcl from im_categories where category_id = $action_id" -default ""]]
 set visible_p 0
 set visible_explicite_permission_p 0
 if {"" == $visible_tcl} {
