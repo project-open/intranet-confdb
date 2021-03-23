@@ -31,7 +31,7 @@ set new_conf_item_url [export_vars -base "/intranet-confdb/new" {object_id retur
 
 # Check the permissions
 # Permissions for all usual projects, companies etc.
-set object_type [db_string acs_object_type "select object_type from acs_objects where object_id=:object_id"]
+set object_type [db_string acs_object_type "select object_type from acs_objects where object_id = :object_id" -default ""]
 set perm_cmd "${object_type}_permissions \$current_user_id \$object_id object_view object_read object_write object_admin"
 eval $perm_cmd
 
