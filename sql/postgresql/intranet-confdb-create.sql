@@ -806,10 +806,19 @@ delete from im_views where view_id = 940;
 insert into im_views (view_id, view_name, visible_for) values (940, 'im_conf_item_list', 'view_conf_items');
 
 
+-- insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
+-- extra_select, extra_where, sort_order, visible_for) values (94001,940,NULL, 
+-- '<input id=list_check_all_conf_items type=checkbox name=_dummy>', 
+-- '$action_checkbox', '', '', 1, '');
+
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
-extra_select, extra_where, sort_order, visible_for) values (94001,940,NULL, 
-'<input id=list_check_all type=checkbox name=_dummy>', 
-'$action_checkbox', '', '', 1, '');
+extra_select, extra_where, sort_order, visible_for) values (94001,940,NULL,
+'<input id=list_check_all_conf_items type=checkbox name=_dummy>',
+'"<input type=checkbox name=conf_item_id.$conf_item_id id=conf_item,$conf_item_id>"', 
+'', '', 1, '');
+
+
+
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94005, 940, NULL, 'Name',
@@ -850,12 +859,12 @@ delete from im_views where view_id = 941;
 --
 insert into im_views (view_id, view_name, visible_for) values (941, 'im_conf_item_list_short', 'view_conf_items');
 
-delete from im_view_columns where column_id = 94101;
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94101,941,NULL,
-'"<input id=list_check_all type=checkbox name=_dummy>"',
+'"<input id=list_check_all_conf_items type=checkbox name=_dummy>"',
 '"<input type=checkbox name=conf_item_id.$conf_item_id id=conf_item,$conf_item_id>"', 
 '', '', 1, '');
+
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (94105, 941, NULL, 'Name',

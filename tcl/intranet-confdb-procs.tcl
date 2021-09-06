@@ -1098,7 +1098,7 @@ ad_proc -public im_conf_item_list_component {
     set component_html "
         <script type=\"text/javascript\" nonce=\"[im_csp_nonce]\">
 	window.addEventListener('load', function() {
-	    document.getElementById('list_check_all').addEventListener('click', function() { acs_ListCheckAll('conf_item', this.checked) });
+	    document.getElementById('list_check_all_conf_items').addEventListener('click', function() { acs_ListCheckAll('conf_item', this.checked) });
 	});
 	</script>
 

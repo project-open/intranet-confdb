@@ -39,7 +39,7 @@ list::create \
     -actions $actions \
     -elements {
 	ticket_chk {
-	    label "<input type=\"checkbox\" id=list_check_all name=\"_dummy\" title=\"Check/uncheck all rows\">"
+	    label "<input type=\"checkbox\" id=list_check_all_conf_related_objects name=\"_dummy\" title=\"Check/uncheck all rows\">"
 	    display_template {
 		@tickets_multirow.ticket_chk;noquote@
 	    }
@@ -134,7 +134,7 @@ db_multirow -extend { ticket_chk object_url direction_pretty rel_name } tickets_
     set ticket_chk "<input type=\"checkbox\" 
 				name=\"rel_id\" 
 				value=\"$rel_id\" 
-				id=\"conf_items_list,$rel_id\">
+				id=\"conf_items_related_list,$rel_id\">
     "
     set rel_name [lang::message::lookup "" intranet-confdb.Rel_$rel_type $rel_type_pretty]
 
