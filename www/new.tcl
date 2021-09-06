@@ -306,7 +306,7 @@ db_multirow -extend {conf_item_chk conf_item_url indent return_url processor} co
     set conf_item_chk "<input type=\"checkbox\" 
 				name=\"conf_item_id\" 
 				value=\"$conf_item_id\" 
-				id=\"conf_items_list,$conf_item_id\">"
+				id=\"conf_items_sub_list,$conf_item_id\">"
     set processor "${processor_num}x$processor_speed"
     set return_url [im_url_with_query]
     set conf_item_url [export_vars -base new {conf_item_id {form_mode "display"}}]
